@@ -137,11 +137,62 @@ Zoomed in views of the indicated PLAs:
 ### /images/pla_4.jpg
 ### /images/pla_5.jpg
 
+
+### /v20_pla2.txt
+
+PLA2 is the V20's conditional match decoder. It has 12 inputs and 26 outputs. It takes the CPU flags
+and opcode bits as inputs and produces a condition code. This PLA implements the `OPC` jump condition 
+code, as referenced in jump conditions below.
+
+All inputs are inverted.
+
+| m   | OF  | CF  | ZF  | SF  | PF  | 80  | 86   | Mnemonic |
+| --- | --- | --- | --- | --- | --- | --- | ---- | -------- |
+| 0   | 0   | ?   | ?   | ?   | ?   |     | 1111 | JO       |
+| 0   | 1   | ?   | ?   | ?   | ?   |     | 1110 | JNO      |
+| 0   | ?   | 0   | ?   | ?   | ?   |     | 1?01 | JB/JBE   |
+| 0   | ?   | 1   | ?   | ?   | ?   |     | 1100 | JAE      |
+| 0   | ?   | ?   | 0   | ?   | ?   |     | 10?1 | JZ/JBE   |
+| 0   | ?   | ?   | 1   | ?   | ?   |     | 1010 | JNZ      |
+| 0   | ?   | 1   | 1   | ?   | ?   |     | 1000 | JA       |
+| 0   | ?   | ?   | ?   | 0   | ?   |     | 0111 | JS       |
+| 0   | ?   | ?   | ?   | 1   | ?   |     | 0110 | JNS      |
+| 0   | ?   | ?   | ?   | ?   | 0   |     | 0101 | JP       |
+| 0   | ?   | ?   | ?   | ?   | 1   |     | 0100 | JNP      |
+| 0   | 1   | ?   | ?   | 0   | ?   |     | 00?1 | JL/JLE   |
+| 0   | 0   | ?   | ?   | 1   | ?   |     | 00?1 | JL/JLE   |
+| 0   | ?   | ?   | 0   | ?   | ?   |     | 0001 | JLE      |
+| 0   | 1   | ?   | ?   | 1   | ?   |     | 0010 | JGE      |
+| 0   | 0   | ?   | ?   | 0   | ?   |     | 0010 | JGE      |
+| 0   | 1   | ?   | 1   | 1   | ?   |     | 0000 | JG       |
+| 0   | 0   | ?   | 1   | 0   | ?   |     | 0000 | JG       |
+| 1   | ?   | ?   | 1   | ?   | ?   | 111 |      | JNZ      |
+| 1   | ?   | ?   | 0   | ?   | ?   | 110 |      | JZ       |
+| 1   | ?   | 1   | ?   | ?   | ?   | 101 |      | JNC      |
+| 1   | ?   | 0   | ?   | ?   | ?   | 100 |      | JC       |
+| 1   | ?   | ?   | ?   | ?   | 1   | 011 |      | JPO      |
+| 1   | ?   | ?   | ?   | ?   | 0   | 010 |      | JPE      |
+| 1   | ?   | ?   | ?   | 1   | ?   | 001 |      | JP       |
+| 1   | ?   | ?   | ?   | 0   | ?   | 000 |      | JM       |
+
+| Input bits | Function                              |
+| ---------- | ------------------------------------- |
+| 11         | Inverted Mode flag                    |
+| 10         | Inverted OF                           |
+| 9          | Inverted CF                           |
+| 8          | Inverted ZF                           |
+| 7          | Inverted SF                           |
+| 6          | Inverted PF                           |
+| 5:3        | Inverted 8080 condition-code bits     |
+| 3:0        | Inverted 8086 Jcc condition-code bits |
+
 ### /v20_pla3.txt
 
 The decoded PLA3 which is the V20's equivalent of the 8088's "Group Decode ROM".
 
-The first two bits are a sort of opcode class field:
+It has 10 inputs and 14 outputs.
+
+The first two input bits are a sort of opcode class field:
 
 | Value | Input bits | Meaning                     |
 | ----- | ---------- | --------------------------- |
@@ -149,6 +200,8 @@ The first two bits are a sort of opcode class field:
 | `1`   | `01`       | Native instructions         |
 | `2`   | `10`       | Unrepresented               |
 | `3`   | `11`       | NEC extended instructions   |
+
+The last 8 inputs are the instruction opcode.
 
 ### Output signals
 
@@ -163,7 +216,11 @@ The first two bits are a sort of opcode class field:
 | 6      | Doesn't read EA operand                                                   |
 | 7      | D bit is valid                                                            |
 | 8      | Opcode high bit: set for all opcodes > 7F                                 |
-| 9      | Unknown                                                                   |
+| 9      | Upper bit for XI calculation                                              |
+| 10     | M1 if bit 2,                                                              |
+| 11     | M2 if bit 2,                                                              |
+| 12     | M3 if bit 2,                                                              |
+| 13     | M4 if bit 2,                                                              |
 
 When output 2 is active, the final four output bits select an operation implemented in miscellaneous logic (non-microcoded).
 
@@ -445,7 +502,7 @@ Bits **22:25**, complemented, in Jump format. If the condition is true, replace 
 | `0C`  | `0011`   | `REP`       | Decrement LC and test for another iteration.*                                              | 8    | Partial |
 | `0D`  | `0010`   | `BUSY`      | Condition polling the BUSY input.                                                          | 1    | Known   |
 | `0E`  | `0001`   | `INT`       | Condition polling the INTR input.                                                          | 2    | Known   |
-| `0F`  | `0000`   | `OPC`       | Opcode-dependent condition.                                                                | 4    | Known   |
+| `0F`  | `0000`   | `OPC`       | Opcode-dependent condition from PLA2                                                       | 4    | Known   |
 
 - **04**: Unlike `JNW`, a sign-extended byte immediate does not select this branch when the operand is a word.
 - **06**: Value is independent of any simultaneous FLAGS transfer.

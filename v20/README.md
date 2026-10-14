@@ -226,24 +226,44 @@ When output 2 is active, the final four output bits select an operation implemen
 
 ### Miscellaneous-logic selector
 
-| Value | Bits 11:14 | Operation        | Meaning                                                       | 8080 | Native                 | Status    |
-| ----- | ---------- | ---------------- | ------------------------------------------------------------- | ---- | ---------------------- | --------- |
-| `0`   | `0000`     | Segment override | Select the segment used by the following instruction.         | —    | `26`, `2E`, `36`, `3E` | Known     |
-| `1`   | `0001`     | 0F               | Extended-opcode prefix: 0F in native mode, ED in 8080 mode.   | `ED` | `0F`                   | Known     |
-| `2`   | `0010`     | STD              | Set the direction flag.                                       | —    | `FD`                   | Known     |
-| `3`   | `0011`     | CLD              | Clear the direction flag.                                     | —    | `FC`                   | Known     |
-| `4`   | `0100`     | STI / EI         | Enable interrupts.                                            | `FB` | `FB`                   | Known     |
-| `5`   | `0101`     | CLI / DI         | Disable interrupts.                                           | `F3` | `FA`                   | Known     |
-| `6`   | `0110`     | STC              | Set the carry flag.                                           | `37` | `F9`                   | Known     |
-| `7`   | `0111`     | CLC              | Clear the carry flag.                                         | —    | `F8`                   | Known     |
-| `8`   | `1000`     | REPC             | Repeat prefix conditioned on carry set.                       | —    | `65`                   | Known     |
-| `9`   | `1001`     | REPNC            | Repeat prefix conditioned on carry clear.                     | —    | `64`                   | Known     |
-| `A`   | `1010`     | CMC              | Complement the carry flag.                                    | `3F` | `F5`                   | Known     |
-| `B`   | `1011`     | HLT              | Halt instruction execution.                                   | `76` | `F4`                   | Known     |
-| `C`   | `1100`     | REPZ             | Repeat prefix; zero-set condition where applicable.           | —    | `F3`                   | Known     |
-| `D`   | `1101`     | REPNZ            | Repeat prefix; zero-clear condition where applicable.         | —    | `F2`                   | Known     |
-| `E`   | `1110`     | F1 LOCK ALIAS(?) | Possible F1 alias of the LOCK prefix; tentative.              | —    | `F1`                   | Tentative |
-| `F`   | `1111`     | LOCK             | Request a locked bus operation for the following instruction. | —    | `F0`                   | Known     |
+| N   | Bits 11:14 | Operation        | Meaning                                                       | 8080 | Native                 | Status    |
+| --- | ---------- | ---------------- | ------------------------------------------------------------- | ---- | ---------------------- | --------- |
+| `0` | `0000`     | Segment override | Select the segment used by the following instruction.         | —    | `26`, `2E`, `36`, `3E` | Known     |
+| `1` | `0001`     | 0F               | Extended-opcode prefix: 0F in native mode, ED in 8080 mode.   | `ED` | `0F`                   | Known     |
+| `2` | `0010`     | STD              | Set the direction flag.                                       | —    | `FD`                   | Known     |
+| `3` | `0011`     | CLD              | Clear the direction flag.                                     | —    | `FC`                   | Known     |
+| `4` | `0100`     | STI / EI         | Enable interrupts.                                            | `FB` | `FB`                   | Known     |
+| `5` | `0101`     | CLI / DI         | Disable interrupts.                                           | `F3` | `FA`                   | Known     |
+| `6` | `0110`     | STC              | Set the carry flag.                                           | `37` | `F9`                   | Known     |
+| `7` | `0111`     | CLC              | Clear the carry flag.                                         | —    | `F8`                   | Known     |
+| `8` | `1000`     | REPC             | Repeat prefix conditioned on carry set.                       | —    | `65`                   | Known     |
+| `9` | `1001`     | REPNC            | Repeat prefix conditioned on carry clear.                     | —    | `64`                   | Known     |
+| `A` | `1010`     | CMC              | Complement the carry flag.                                    | `3F` | `F5`                   | Known     |
+| `B` | `1011`     | HLT              | Halt instruction execution.                                   | `76` | `F4`                   | Known     |
+| `C` | `1100`     | REPZ             | Repeat prefix; zero-set condition where applicable.           | —    | `F3`                   | Known     |
+| `D` | `1101`     | REPNZ            | Repeat prefix; zero-clear condition where applicable.         | —    | `F2`                   | Known     |
+| `E` | `1110`     | F1 LOCK ALIAS(?) | Possible F1 alias of the LOCK prefix; tentative.              | —    | `F1`                   | Tentative |
+| `F` | `1111`     | LOCK             | Request a locked bus operation for the following instruction. | —    | `F0`                   | Known     |
+
+When output 2 is inactive, the final four bits represent an opcode family.
+
+### Instruction family selector
+
+| N   | Bits 11:14 | Native opcode inputs      | 8080 opcode inputs                                | Ext. opcodes | Instruction family represented                                |
+| --- | ---------- | ------------------------- | ------------------------------------------------- | ------------ | ------------------------------------------------------------- |
+| `1` | `0001`     | `07,17,1F,8C,8E`          | -                                                 | -            | POP segment and MOV involving a segment register              |
+| `3` | `0011`     | -                         | -                                                 | `30-3F`      | Block containing BINS/BEXT                                    |
+| `4` | `0100`     | `69,6B,80-87`             | -                                                 | -            | Immediate IMUL, immediate ALU group, TEST and XCHG            |
+| `6` | `0110`     | `6C-6F`                   | -                                                 | -            | INS/OUTS                                                      |
+| `A` | `1010`     | `27,2F,37,3F`             | `27`                                              | `20-27`      | Decimal/ASCII adjustment and packed-BCD string block          |
+| `B` | `1011`     | `F6-F7,FE-FF`             | -                                                 | -            | Instructions whose microcode entry is selected through ModR/M |
+| `C` | `1100`     | `40-4F`                   | `04-05,0C-0D,14-15,1C-1D,24-25,2C-2D,34-35,3C-3D` | -            | Native register INC/DEC and 8080 INR/DCR                      |
+| `D` | `1101`     | -                         | `09,19,29,39`                                     | -            | 8080 DAD                                                      |
+| `E` | `1110`     | `A6-A7,AE-AF,C0-C1,E0-E1` | -                                                 | -            | CMPS/SCAS, immediate shifts/rotates, LOOPNZ/LOOPZ             |
+| `F` | `1111`     | `E4-E7,EC-EF`             | `D3-DB`                                           | -            | Scalar IN/OUT                                                 |
+
+ - **1**: Supresses interrupt for one cycle
+ - **3**: 
 
 ### Microcode Disassemblies
 
@@ -558,9 +578,9 @@ Bits **21:24**, complemented, in Control format. IC includes bit 21, which overl
 | `0E`  | `0001`   | `CALL`         | Transfer to the five-bit CallT target.                                       | 40   | Known     |
 | `0F`  | `0000`   | `--`           | No internal-control action.                                                  | 598  | Known     |
 
-- *00*: Likely some internal detail related to emulation mode processing. There is no equivalent in `BRKEM`.
-- *0A*: `WAIT` Likely defers interrupt recognition until after the following instruction; affected interrupt sources and exact behavior remain unverified.
-- *0C*: Used for signed multiply/divide correction.
+- **00**: Likely some internal detail related to emulation mode processing. There is no equivalent in `BRKEM`.
+- **0A**: `WAIT` Likely defers interrupt recognition until after the following instruction; affected interrupt sources and exact behavior remain unverified.
+- **0C**: Used for signed multiply/divide correction.
 
 ## EC: external control
 
@@ -577,7 +597,7 @@ Bits **25:27**, complemented, in non-`CALL` Control format. These bits are part 
 | `06`  | `001`    | `COMMIT` | Request memory-operand writeback when the instruction writes a memory destination. | 23   | Known   |
 | `07`  | `000`    | `--`     | No external-control action.                                                        | 527  | Known   |
 
-- *05*: The V20 splits one request into two byte bus cycles and takes the vector from the high byte. V30 issues two requests and takes the second response.
+- **05**: The V20 splits one request into two byte bus cycles and takes the vector from the high byte. V30 issues two requests and takes the second response.
 
 ## SR: segment/access selection
 

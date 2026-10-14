@@ -260,10 +260,7 @@ When output 2 is inactive, the final four bits represent an opcode family.
 | `C` | `1100`     | `40-4F`                   | `04-05,0C-0D,14-15,1C-1D,24-25,2C-2D,34-35,3C-3D` | -            | Native register INC/DEC and 8080 INR/DCR                      |
 | `D` | `1101`     | -                         | `09,19,29,39`                                     | -            | 8080 DAD                                                      |
 | `E` | `1110`     | `A6-A7,AE-AF,C0-C1,E0-E1` | -                                                 | -            | CMPS/SCAS, immediate shifts/rotates, LOOPNZ/LOOPZ             |
-| `F` | `1111`     | `E4-E7,EC-EF`             | `D3-DB`                                           | -            | Scalar IN/OUT                                                 |
-
- - **1**: Supresses interrupt for one cycle
- - **3**: 
+| `F` | `1111`     | `E4-E7,EC-EF`             | `D3-DB`                                           | -            | Scalar IN/OUT                                                 |f
 
 ### Microcode Disassemblies
 

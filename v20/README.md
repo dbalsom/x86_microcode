@@ -1,8 +1,3 @@
-> [!NOTE]  
-> If you would like to assist with the decoding effort, there is a thread on the [VCF forums](https://forum.vcfed.org/index.php?threads/the-nec-v20-microcode-rom.1254770/) where the most recent updates occur.
-
-
-
 # The NEC V20 & V30 Microcode
 
 A decoding of the NEC V20/V30 microcode was recently made possible via the imaging work of [InfoSecDJ](https://infosec.exchange/@infosecdj):
@@ -15,6 +10,15 @@ NEC used unified microcode for both the NEC V20 and V30, which differ only in th
 The only difference between the microcode for either version of CPU is in the microcode routine that handles hardware
 interrupts. Like the 8088, the V20 needs a special routine to only issue one INTA request to the 8259 as otherwise its
 BIU logic will split two INTA cycles into four. 
+
+## Microcode Emulators
+
+A reference emulator implementing the V20 and V30 microcode can be found [here](https://github.com/dbalsom/XTCE-Blue).
+
+## Decoding Effort
+
+Much of the decoding process was documented in [this thread on the VCF forums.](https://forum.vcfed.org/index.php?threads/the-nec-v20-microcode-rom.1254770/).
+Decoding is more or less complete as of 2026, but this thread may service as a historical reference.
 
 ## Word Format
 
@@ -611,6 +615,9 @@ Bits **28:29**, complemented, in non-CALL Control format. SR selects the segment
 
 Bits **25:29**, complemented, when IC is `0E` (CALL). EC and SR are inactive overlapping views in this format. 
 The name `CALL` denotes a far microcode transfer.
+
+Note that unlike the 8088, V20 `CALL` does not save a return address and there is no equivalent `RETN`. 
+It would probably be more accurately named `JMPF`...
 
 | Value | Raw bits | Name    | Microaddress | ROM line | Meaning                                              | Uses | Status |
 | ----- | -------- | ------- | ------------ | -------- | ---------------------------------------------------- | ---- | ------ |

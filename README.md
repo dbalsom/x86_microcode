@@ -15,6 +15,10 @@ Microcode resources for various x86 CPUs.
 
  * Active word count 1024, selected by metal mask.
 
+## /8088
+
+Microcode for the Intel 8088 and 8086 CPUs.
+
 ## /v20
 
 Microcode for the NEC V20 and V30 CPUs.

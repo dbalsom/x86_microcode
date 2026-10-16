@@ -1,0 +1,512 @@
+000 A CD F H J L  OPQR  U       R     -> tmpb      4   none  WB,NX       0100010??.00  MOV rm<->r
+001  B  E GHI  L  OPQR          tmpb  -> M         4   none  RNI
+002 ABC  F HI  LM O QRSTU                          6   W,RNI DD,P0
+003   CD FG IJ L N     TU       IJ    -> tmpa      5   UNC   EAOFFSET                  [SI]
+004 AB  E  HI  L  OPQR          IND   -> R         4   none  RNI         010001101.00  LEA
+005
+006
+007
+008   CD F   J  MN   R          M     -> tmpa      1   XI    tmpa        000???0??.00  alu rm<->r
+009 A CD F H J L  OPQR  U       R     -> tmpb      4   none  WB,NX
+00a  B  EF  I KL  OPQR          SIGMA -> M         4   none  RNI      F
+00b ABC  F HI  LM O QRSTU                          6   W,RNI DD,P0
+00c A C E  HIJ     P   T        Q     -> tmpbL     0   L8       2        0100000??.00  alu rm,i
+00d ABC E  HIJ L  OPQRSTU       Q     -> tmpbH
+00e   CD F   J  MN   R  U       M     -> tmpa      1   XI    tmpa, NX
+00f  B  EF  I KL  OPQR          SIGMA -> M         4   none  RNI      F
+010 ABC  F HI  LM O QRSTU                          6   W,RNI DD,P0       0?00000??.01
+011
+012
+013
+014 A C E  HIJ     P   T        Q     -> tmpbL     0   L8       2        01100011?.00  MOV rm,i
+015 ABC E  HIJ L  OPQRSTU       Q     -> tmpbH
+016  B  E GHI  L  OPQR          tmpb  -> M         4   none  RNI
+017 ABC  F HI  LM O QRSTU                          6   W,RNI DD,P0
+018 A C E  HIJ     P   T        Q     -> tmpbL     0   L8       2        000???10?.00  alu A,i
+019 ABC E  HIJ L  OPQRSTU       Q     -> tmpbH
+01a   CD F   J  MN   R  U       M     -> tmpa      1   XI    tmpa, NX
+01b  B  EF  I KL  OPQR          SIGMA -> M         4   none  RNI      F
+01c A C E  HIJ     P   T        Q     -> tmpbL     0   L8       2        01011????.00  MOV r,i
+01d ABC E  HIJ L  OPQRSTU       Q     -> tmpbH
+01e  B  E GHI  L  OPQR          tmpb  -> M         4   none  RNI
+01f   CD FGHIJ L N     TU       IK    -> tmpa      5   UNC   EAOFFSET                  [DI]
+020 A CD F   J  MN   R TU       M     -> tmpb      1   XI    tmpb, NX    ?1111100?.00   INC/DEC rm
+021  B  EF  I KL  OPQR          SIGMA -> M         4   none  RNI      F
+022 ABC  F HI  LM O QRSTU                          6   W,RNI DD,P0
+023   CD FGHI  L N     TU       MP    -> tmpa      5   UNC   EAOFFSET                  [BP]
+024   CD FG I   MNOP R          SP    -> tmpa      1   DEC2  tmpa        ?1111111?.00   PUSH rm
+025 A C  F  I  L  OPQRSTU       SIGMA -> IND
+026   CDEF  I  L  OPQRSTU       SIGMA -> SP
+027  BC  F   J LM O QR TU       M     -> OPR       6   W,RNI DS,P0
+028   CD FG I   MNOP R          SP    -> tmpa      1   DEC2  tmpa        001010???.00  PUSH rw
+029 A C  F  I  L  OPQRSTU       SIGMA -> IND
+02a   CDEF  I  L  OPQRSTU       SIGMA -> SP
+02b  BC  F   J LM O QR TU       M     -> OPR       6   W,RNI DS,P0
+02c   CD FG I   MNOP R          SP    -> tmpa      1   DEC2  tmpa        0000??110.00  PUSH sr
+02d A C  F  I  L  OPQRSTU       SIGMA -> IND
+02e   CDEF  I  L  OPQRSTU       SIGMA -> SP
+02f  BC  F H J LM O QR TU       R     -> OPR       6   W,RNI DS,P0
+030   CD FG I   MNOP R          SP    -> tmpa      1   DEC2  tmpa        010011100.00  PUSHF
+031 A C  F  I  L  OPQRSTU       SIGMA -> IND
+032   CDEF  I  L  OPQRSTU       SIGMA -> SP
+033  BC   GHIJ LM O QR TU       F     -> OPR       6   W,RNI DS,P0
+034 A C  FG I  LM    R          SP    -> IND       6   R     DS,P2       001011???.00  POP rw
+035   CDE  HI  L  OPQRS U       IND   -> SP        4   none  NX
+036  B  E   IJ L  OPQR          OPR   -> M         4   none  RNI
+037   CD FGH J L N     TU       HL    -> tmpa      5   UNC   EAOFFSET                  [BX]
+038 A C  FG I  LM    R          SP    -> IND       6   R     DS,P2       0000??111.00  POP sr
+039   CDE  HI  L  OPQRS U       IND   -> SP        4   none  NX
+03a AB  E   IJ L  OPQR          OPR   -> R         4   none  RNI
+03b
+03c A C  FG I  LM    R          SP    -> IND       6   R     DS,P2       010011101.00  POPF
+03d   CDE  HI  L  OPQRS U       IND   -> SP        4   none  NX
+03e ABCD    IJ L  OPQR          OPR   -> F         4   none  RNI
+03f
+040   CD   HI  L  OPQRSTU       IND   -> tmpa                            010001111.00  POP rmw
+041 A C  FG I  LM    R          SP    -> IND       6   R     DS,P2
+042   CDE  HI  L  OPQRSTU       IND   -> SP
+043 A C   G I  L  OPQR  U       tmpa  -> IND       4   none  WB,NX
+044  B  E   IJ L  OPQR          OPR   -> M         4   none  RNI         010001111.01
+045 ABC  F HI  LM O QRSTU                          6   W,RNI DD,P0
+046
+047
+048
+049
+04a
+04b
+04c A CD F   J  MN   R TU       M     -> tmpb      1   XI    tmpb, NX    ?11110010.00   NOT rm
+04d  B  EF  I  L  OPQR          SIGMA -> M         4   none  RNI
+04e ABC  F HI  LM O QRSTU                          6   W,RNI DD,P0
+04f
+050 A CD F   J  MN   R TU       M     -> tmpb      1   XI    tmpb, NX    ?11110011.00   NEG rm
+051  B  EF  I KL  OPQR          SIGMA -> M         4   none  RNI      F
+052 ABC  F HI  LM O QRSTU                          6   W,RNI DD,P0
+053
+054 A C EFG    L  OPQRS U       XA    -> tmpbL     4   none  NX          010011000.00  CBW
+055    DE GHI  L  OPQR          tmpb  -> XA        4   none  RNI
+056
+057
+058 A CD FG     M O Q  T        XA    -> tmpb      1   LRCY  tmpb        010011001.00  CWD
+059 A CD F  I   M O QR T        SIGMA -> tmpb      1   RRCY  tmpb
+05a ABC  F HI     OPQ S U                          0   CY       5
+05b  B DEF HIJ L  OPQRS U       ZERO  -> DE        4   none  NX
+05c A CD F  I  L  OPQR          SIGMA -> tmpb      4   none  RNI         010011001.01
+05d  B DEF HI  L  OPQRS U       ONES  -> DE        4   none  NX
+05e A CD F  I  L  OPQR          SIGMA -> tmpb      4   none  RNI
+05f
+060 A C E  HIJ L  OPQRSTU       Q     -> tmpbL                           01010000?.00  MOV A,[i]
+061 ABC E  HIJ L  OPQRSTU       Q     -> tmpbH
+062 A C   GHI  LM    RSTU       tmpb  -> IND       6   R     DD,P0
+063  B  E   IJ L  OPQR          OPR   -> M         4   none  RNI
+064 A C E  HIJ L  OPQRSTU       Q     -> tmpbL                           01010001?.00  MOV [i],A
+065 ABC E  HIJ L  OPQRSTU       Q     -> tmpbH
+066 A C   GHI  L  OPQRSTU       tmpb  -> IND
+067  BC  F   J LM O QRSTU       M     -> OPR       6   W,RNI DD,P0
+068  BCD   HI   MNOP  S         IND   -> tmpc      1   INC2  tmpc        ?11111011.00   CALL FAR rm
+069 A C  F  I  LM    RSTU       SIGMA -> IND       6   R     DD,P0
+06a   CD    IJ  MNOP RS         OPR   -> tmpa      1   DEC2  tmpc
+06b  BCD FG I  L  OPQR TU       SP    -> tmpc      4   none  SUSP                      FARCALL
+06c A C  F  I  L  OPQR T        SIGMA -> IND       4   none  CORR        ?11111011.01  FARCALL2
+06d  BC    H   LM O  R T        RC    -> OPR       6   w     DS,M2
+06e A     G I   MN    S         tmpa  -> RC        1   PASS  tmpc
+06f  BC     I  L N      U       PC    -> OPR       5   UNC   NEARCALL
+070 A C E  HIJ L  OPQRSTU       Q     -> tmpbL                           010011010.00  CALL cd
+071 ABC E  HIJ L  OPQRSTU       Q     -> tmpbH
+072   C E  HIJ  MNOP RS         Q     -> tmpaL     1   DEC2  tmpc
+073  BC E  HIJ L N              Q     -> tmpaH     5   UNC   FARCALL
+074 A CD F   J L  OPQR TU       M     -> tmpb      4   none  SUSP        ?11111010.00   CALL rm
+075 A C  FG I  L  OPQR T        SP    -> IND       4   none  CORR
+076  BC     I   MNOP RS         PC    -> OPR       1   DEC2  tmpc
+077   C   GHI  L     RSTU       tmpb  -> PC        4   FLUSH none                      NEARCALL
+078  BCD   HI  L  OPQRSTU       IND   -> tmpc                            ?11111010.01
+079 A C  F  I  L  OPQRSTU       SIGMA -> IND
+07a   CDEF  I  LM O QR TU       SIGMA -> SP        6   W,RNI DS,P0
+07b
+07c A C E  HIJ L  OPQRSTU       Q     -> tmpbL                           011101000.00  CALL cw
+07d ABC E  HIJ  MNOP RS         Q     -> tmpbH     1   DEC2  tmpc
+07e  BCD FG I  L  OPQR TU       SP    -> tmpc      4   none  SUSP
+07f A C  F  I  L  OPQR T        SIGMA -> IND       4   none  CORR
+080   CD    I   M               PC    -> tmpa      1   ADD   tmpa        011101000.01
+081   C  F  I  L     RSTU       SIGMA -> PC        4   FLUSH none
+082   CDE  HI    N    STU       IND   -> SP        0   UNC      7
+083  BC   G I  LM O QR TU       tmpa  -> OPR       6   W,RNI DS,P0
+084 A CD F   J L  OPQRSTU       M     -> tmpb                            010010???.00  XCHG AX,rw
+085  B  EFG    L  OPQRS U       XA    -> M         4   none  NX
+086    DE GHI  L  OPQR          tmpb  -> XA        4   none  RNI
+087
+088 A CD F   J  MN   R TU       M     -> tmpb      1   XI    tmpb, NX    01101000?.00  rot rm,1
+089  B  EF  I KL  OPQR          SIGMA -> M         4   none  RNI      F
+08a ABC  F HI  LM O QRSTU                          6   W,RNI DD,P0
+08b
+08c   CD F HIJ L  OPQRSTU       ZERO  -> tmpa                            01101001?.00  rot rm,CL
+08d   C EFGH    MN              BC    -> tmpaL     1   PASS  tmpa
+08e A CD F   J   N    S         M     -> tmpb      0   UNC      4
+08f A CD F  I K MNO  R          SIGMA -> tmpb      1   DEC   tmpa     F
+090   CD F  I   MN   R T        SIGMA -> tmpa      1   XI    tmpb        01101001?.01
+091 ABC  F HI    N P   TU                          0   NZ       3
+092  B  E GHI  L  OPQR          tmpb  -> M         4   none  RNI
+093 ABC  F HI  LM O QRSTU                          6   W,RNI DD,P0
+094   CD F   J  M  P            M     -> tmpa      1   AND   tmpa        01000010?.00  TEST rm,r
+095 A CD F H J L  OPQRS U       R     -> tmpb      4   none  NX
+096 ABC  F  I KL  OPQR          SIGMA -> no dest   4   none  RNI      F
+097
+098 A C E  HIJ     P   T        Q     -> tmpbL     0   L8       2        ?1111000?.00   TEST rm,i
+099 ABC E  HIJ L  OPQRSTU       Q     -> tmpbH
+09a   CD F   J  M  P    U       M     -> tmpa      1   AND   tmpa, NX
+09b ABC  F  I KL  OPQR          SIGMA -> no dest   4   none  RNI      F
+09c A C E  HIJ     P   T        Q     -> tmpbL     0   L8       2        01010100?.00  TEST A,i
+09d ABC E  HIJ L  OPQRSTU       Q     -> tmpbH
+09e   CD FG     M  P    U       XA    -> tmpa      1   AND   tmpa, NX
+09f ABC  F  I KL  OPQR          SIGMA -> no dest   4   none  RNI      F
+0a0 ABC  F HI     OPQ  T                           0   CY       2        011010110.00  SALC
+0a1    D F HIJ L  OPQR          ZERO  -> A         4   none  RNI
+0a2    D F HI  L  OPQR          ONES  -> A         4   none  RNI
+0a3
+0a4   CD F H J L  OPQRSTU       R     -> tmpa                            01000011?.00  XCHG rm,r
+0a5 A CD F   J L  OPQRSTU       M     -> tmpb
+0a6 AB  E GHI  L  OPQR  U       tmpb  -> R         4   none  WB,NX
+0a7  B  E G I  L  OPQR          tmpa  -> M         4   none  RNI
+0a8 ABC  F HI  LM O QRSTU                          6   W,RNI DD,P0       01000011?.01
+0a9
+0aa
+0ab
+0ac A C E  HIJ L  OPQRSTU       Q     -> tmpbL                           01110010?.00  IN A,ib
+0ad ABC EF HIJ  MN     T        ZERO  -> tmpbH     1   PASS  tmpb
+0ae A C  F  I  LM     STU       SIGMA -> IND       6   R     D0,P0
+0af  B  E   IJ L  OPQR          OPR   -> M         4   none  RNI
+0b0 A C E  HIJ L  OPQRSTU       Q     -> tmpbL                           01110011?.00  OUT ib,A
+0b1 ABC EF HIJ  MN     T        ZERO  -> tmpbH     1   PASS  tmpb
+0b2 A C  F  I  L  OPQRSTU       SIGMA -> IND
+0b3  BC  FG    LM O Q STU       XA    -> OPR       6   W,RNI D0,P0
+0b4 A C  FG  J LM     STU       DE    -> IND       6   R     D0,P0       01110110?.00  IN A,DX
+0b5  B  E   IJ L  OPQR          OPR   -> M         4   none  RNI
+0b6
+0b7
+0b8 A C  FG  J L  OPQRSTU       DE    -> IND                             01110111?.00  OUT DX,A
+0b9  BC  FG    LM O Q STU       XA    -> OPR       6   W,RNI D0,P0
+0ba
+0bb
+0bc A C  FG I  LM    R          SP    -> IND       6   R     DS,P2       0110000?1.00  RET
+0bd ABC  F HI  L  OPQR TU                          4   none  SUSP
+0be   C     IJ L     RSTU       OPR   -> PC        4   FLUSH none
+0bf   CDE  HI  L  OPQR          IND   -> SP        4   none  RNI
+0c0 ABC  F HI  LMN                                 7   UNC   FARRET      0110010?1.00  RETF
+0c1   CDE  HI  L  OPQR          IND   -> SP        4   none  RNI
+0c2 A C  FG I  LM    R          SP    -> IND       6   R     DS,P2                     FARRET
+0c3 ABC  F HI  L  OPQR TU                          4   none  SUSP
+0c4   C     IJ   N PQ ST        OPR   -> PC        0   X0       6        0110010?1.01
+0c5 ABC  F HI  L     RS                            4   FLUSH RTN
+0c6 ABC  F HI  LM    R                             6   R     DS,P2
+0c7 A       IJ L     RS         OPR   -> RC        4   FLUSH RTN
+0c8 ABC  F HI  LMN                                 7   UNC   FARRET      011001111.00  IRET
+0c9 ABC  F HI  LM    R                             6   R     DS,P2
+0ca ABCD    IJ L  OPQRSTU       OPR   -> F
+0cb   CDE  HI  L  OPQR          IND   -> SP        4   none  RNI
+0cc   C E  HIJ  M               Q     -> tmpaL     1   ADD   tmpa        01100?0?0.00  RET/RETF iw
+0cd  BC E  HIJ LMN              Q     -> tmpaH     7   UNC   FARRET
+0ce A CD   HI  L  OPQRSTU       IND   -> tmpb
+0cf   CDEF  I  L  OPQR          SIGMA -> SP        4   none  RNI
+0d0 A C E  HIJ     P   T        Q     -> tmpbL     0   L8       2        0111010?1.00  JMP cw/JMP cb
+0d1 ABC E  HIJ L  OPQRSTU       Q     -> tmpbH
+0d2 ABC  F HI  L  OPQR TU                          4   none  SUSP                      RELJMP
+0d3 ABC  F HI  L  OPQR T                           4   none  CORR
+0d4   CD    I   M               PC    -> tmpa      1   ADD   tmpa        0111010?1.01
+0d5   C  F  I  L     R          SIGMA -> PC        4   FLUSH RNI
+0d6
+0d7
+0d8 ABC  F HI  L  OPQR TU                          4   none  SUSP        ?11111100.00   JMP rm
+0d9   C  F   J L     R          M     -> PC        4   FLUSH RNI
+0da
+0db
+0dc  BCD   HI   MNOP  S         IND   -> tmpc      1   INC2  tmpc        ?11111101.00   JMP FAR rm
+0dd A C  F  I  L  OPQR TU       SIGMA -> IND       4   none  SUSP
+0de   C   GHI  LM    RSTU       tmpb  -> PC        6   R     DD,P0
+0df A       IJ L     R          OPR   -> RC        4   FLUSH RNI
+0e0 A C E  HIJ L  OPQRSTU       Q     -> tmpbL                           011101010.00  JMP cd
+0e1 ABC E  HIJ L  OPQRSTU       Q     -> tmpbH
+0e2   C E  HIJ L  OPQRSTU       Q     -> tmpaL
+0e3  BC E  HIJ L  OPQRSTU       Q     -> tmpaH
+0e4 ABC  F HI  L  OPQR TU                          4   none  SUSP        011101010.01
+0e5   C   GHI  L  OPQRSTU       tmpb  -> PC
+0e6 A     G I  L     R          tmpa  -> RC        4   FLUSH RNI
+0e7
+0e8 A C E  HIJ L  OPQRSTU       Q     -> tmpbL                           0011?????.00  Jcond cb
+0e9 ABC  F HI  L NOPQ  T                           5   XC    RELJMP
+0ea ABC  F HI  L  OPQR                             4   none  RNI
+0eb
+0ec  B  EF H J L  OPQR          R     -> M         4   none  RNI         0100011?0.00  MOV rmw<->sr
+0ed ABC  F HI  LM O QRSTU                          6   W,RNI DD,P0
+0ee
+0ef
+0f0 AB  E   IJ L  OPQRSTU       OPR   -> R                               011000100.00  LES
+0f1  BCD   HI   MNOP  S         IND   -> tmpc      1   INC2  tmpc
+0f2 A C  F  I  LM    RSTU       SIGMA -> IND       6   R     DD,P0
+0f3         IJ L  OPQR          OPR   -> RA        4   none  RNI
+0f4 AB  E   IJ L  OPQRSTU       OPR   -> R                               011000101.00  LDS
+0f5  BCD   HI   MNOP  S         IND   -> tmpc      1   INC2  tmpc
+0f6 A C  F  I  LM    RSTU       SIGMA -> IND       6   R     DD,P0
+0f7 AB      IJ L  OPQR          OPR   -> RD        4   none  RNI
+0f8 ABC  F HI     O Q  TU                          0   TEST     3        010011011.00  WAIT
+0f9 ABC  F HI  L  O   STU                          4   WAIT  none
+0fa ABC  F HI  L  OPQR                             4   none  RNI
+0fb ABC  F HI    NOP  S U                          0   INT      5
+0fc ABC  F HI    N                                 0   UNC      0        010011011.01
+0fd ABC  F HI  L  OPQR TU                          4   none  SUSP
+0fe ABC  F HI  L  OPQR T                           4   none  CORR
+0ff  BCD    I   MNO  RS         PC    -> tmpc      1   DEC   tmpc
+100 ABC  F HI  L  OPQRSTU                                                010011110.00  SAHF
+101   CD  GHIJ L  OPQRSTU       F     -> tmpa
+102   C EF     L  OPQRS U       X     -> tmpaL     4   none  NX
+103 ABCD  G I  L  OPQR          tmpa  -> F         4   none  RNI
+104 ABC  F HI  L  OPQRS U                          4   none  NX          010011111.00  LAHF
+105     E GHIJ L  OPQR          F     -> X         4   none  RNI
+106
+107
+108 ABC  F HI  L  OPQR                             4   none  RNI         011011???.00  ESC
+109
+10a
+10b
+10c   CD F HIJ L  OPQRSTU       ZERO  -> tmpa                            011010111.00  XLAT
+10d   C EFG    L  OPQRSTU       XA    -> tmpaL
+10e A CD FGH J  M               HL    -> tmpb      1   ADD   tmpa
+10f A C  F  I  LM    RSTU       SIGMA -> IND       6   R     DD,P0
+110    D    IJ L  OPQR          OPR   -> A         4   none  RNI         011010111.01
+111 ABC  F HI  L  OPQRSTU
+112  BCD FGH    MN    S         BC    -> tmpc      1   PASS  tmpc                      RPTS
+113 ABC  F  I   MNO  RS         SIGMA -> no dest   1   DEC   tmpc
+114 ABC  F HI    N P R T                           0   NZ      10        011010111.10
+115 ABC  F HI  L  OPQR                             4   none  RNI
+116 ABC  F HI  L  OPQRS                            4   none  RTN
+117 ABC  F HI  L  OPQRSTU
+118 A  DE G IJ L  OPQR TU       tmpc  -> BC        4   none  SUSP        011010111.11  RPTI
+119 ABC  F HI  L  OPQR T                           4   none  CORR
+11a A CD    I   MNOP R T        PC    -> tmpb      1   DEC2  tmpb
+11b   C  F  I  L     R          SIGMA -> PC        4   FLUSH RNI
+11c A C  FGHIJ LMNO Q   U       IK    -> IND       7   F1    RPTS        01010101?.00  STOS
+11d  BC  F   J LM O     U       M     -> OPR       6   w     DA,BL
+11e ABCDE  HI    N  Q S U       IND   -> IK        0   NF1      5
+11f  BCD F  I  L NOP R          SIGMA -> tmpc      5   INT   RPTI
+120 ABC  F HI  LMNO Q   U                          7   F1    RPTS        01010?11?.00  CMPS/SCAS
+121   CD F   J   N PQ S U       M     -> tmpa      0   X0       5
+122 A C  FG IJ LM    RS U       IJ    -> IND       6   R     DD,BL
+123  BCDE  HI  L  OPQRSTU       IND   -> IJ
+124   CD    IJ L  OPQRSTU       OPR   -> tmpa                            01010?11?.01
+125 A C  FGHIJ LM       U       IK    -> IND       6   R     DA,BL
+126 A CD    IJ  M  P R          OPR   -> tmpb      1   SUBT  tmpa
+127 ABC  F  I K MNO  RS         SIGMA -> no dest   1   DEC   tmpc     F
+128 ABCDE  HI    N  QRS         IND   -> IK        0   NF1     12        01010?11?.10
+129 A  DEF  I        RS         SIGMA -> BC        0   F1ZZ    12
+12a  BCD F  I  L NOP R          SIGMA -> tmpc      5   INT   RPTI
+12b ABC  F HI    N P    U                          0   NZ       1
+12c ABC  F HI  LMNO Q   U                          7   F1    RPTS        01010?10?.00  MOVS/LODS
+12d A C  FG IJ LM    RS U       IJ    -> IND       6   R     DD,BL
+12e  BCDE  HI    N PQR          IND   -> IJ        0   X0       8
+12f A C  FGHIJ LM O     U       IK    -> IND       6   w     DA,BL
+130 ABCDE  HI    N  Q STU       IND   -> IK        0   NF1      7        01010?10?.01
+131  BCD F  I  L NOP R          SIGMA -> tmpc      5   INT   RPTI
+132 A  DE G IJ   N P    U       tmpc  -> BC        0   NZ       1
+133 ABC  F HI  L  OPQR                             4   none  RNI
+134  BCD FGH    MN    S         BC    -> tmpc      1   PASS  tmpc        011100011.00  JCXZ
+135 ABC  F  I  L  OPQRSTU       SIGMA -> no dest
+136 A C E  HIJ   N P  S         Q     -> tmpbL     0   NZ       4
+137 ABC  F HI  L N     T                           5   UNC   RELJMP
+138  BCD FGH    MNO  RS         BC    -> tmpc      1   DEC   tmpc        01110000?.00  LOOPNE/LOOPE
+139 A  DEF  I  L  OPQRSTU       SIGMA -> BC
+13a A C E  HIJ        S         Q     -> tmpbL     0   F1ZZ     4
+13b ABC  F HI  L N P   T                           5   NZ    RELJMP
+13c ABC  F HI  L  OPQR                             4   none  RNI         01110000?.01
+13d
+13e
+13f
+140  BCD FGH    MNO  RS         BC    -> tmpc      1   DEC   tmpc        011100010.00  LOOP
+141 A  DEF  I  L  OPQRSTU       SIGMA -> BC
+142 A C E  HIJ L N P   T        Q     -> tmpbL     5   NZ    RELJMP
+143 ABC  F HI  L  OPQR                             4   none  RNI
+144   C E G     MN   R          A     -> tmpaL     1   XI    tmpa        00010?111.00  DAA/DAS
+145 A CD F HI  L  OPQRSTU       ONES  -> tmpb
+146    D F  I K M       U       SIGMA -> A         1   ADD   tmpa, NX F
+147 ABC  F HI  L  OPQR                             4   none  RNI
+148   C E G     MN   R          A     -> tmpaL     1   XI    tmpa        00011?111.00  AAA/AAS
+149 A CD F HI  L  OPQRSTU       ONES  -> tmpb
+14a    D F  I K MNO  R T        SIGMA -> A         1   DEC   tmpb     F
+14b ABC  F HI    N PQ S U                          0   X0       5
+14c ABC  F HI   MNO    T                           1   INC   tmpb        00011?111.01
+14d A CD F       NO   STU       X     -> tmpb      0   NCY      7
+14e     EF  I  L  OPQR          SIGMA -> X         4   none  RNI
+14f ABC  F HI  L  OPQR                             4   none  RNI
+150  BCD  G     M O Q S         A     -> tmpc      1   LRCY  tmpc        01111010?.00   iMUL rmb
+151 A CD F   J LMN PQ S         M     -> tmpb      7   X0    PREIMUL
+152 ABC  F HI  LMN     T                           7   UNC   CORX
+153 ABC  F HI  LMNO Q S U                          7   F1    NEGATE
+154 ABC  F HI  LMN PQ ST                           7   X0    IMULCOF     01111010?.01
+155    D  G IJ   N PQ STU       tmpc  -> A         0   X0       7
+156 ABC  F HI  LMN    STU                          7   UNC   MULCOF
+157     E G I  L  OPQR          tmpa  -> X         4   none  RNI
+158  BCD FG     M O Q S         XA    -> tmpc      1   LRCY  tmpc        11111010?.00   iMUL rmw
+159 A CD F   J LMN PQ S         M     -> tmpb      7   X0    PREIMUL
+15a ABC  F HI  LMN     T                           7   UNC   CORX
+15b ABC  F HI  LMNO Q S U                          7   F1    NEGATE
+15c ABC  F HI  LMN PQ ST                           7   X0    IMULCOF     11111010?.01
+15d    DE G IJ   N PQ STU       tmpc  -> XA        0   X0       7
+15e ABC  F HI  LMN    STU                          7   UNC   MULCOF
+15f  B DE G I  L  OPQR          tmpa  -> DE        4   none  RNI
+160   CD F     L  OPQRSTU       X     -> tmpa                            01111011?.00   iDIV rmb
+161  BCD  G     M O Q           A     -> tmpc      1   LRCY  tmpa
+162 A CD F   J LMN PQR          M     -> tmpb      7   X0    PREIDIV
+163 ABC  F HI  LMN     TU                          7   UNC   CORD
+164 ABC  F HI   MNO Q S                            1   COM1  tmpc        01111011?.01
+165 A CD F     LMN PQR  U       X     -> tmpb      7   X0    POSTIDIV
+166    D F  I  L  OPQRS U       SIGMA -> A         4   none  NX
+167     E G I  L  OPQR          tmpa  -> X         4   none  RNI
+168   CD FG  J L  OPQRSTU       DE    -> tmpa                            11111011?.00   iDIV rmw
+169  BCD FG     M O Q           XA    -> tmpc      1   LRCY  tmpa
+16a A CD F   J LMN PQR          M     -> tmpb      7   X0    PREIDIV
+16b ABC  F HI  LMN     TU                          7   UNC   CORD
+16c ABC  F HI   MNO Q S                            1   COM1  tmpc        11111011?.01
+16d A CD FG  J LMN PQR  U       DE    -> tmpb      7   X0    POSTIDIV
+16e    DEF  I  L  OPQRS U       SIGMA -> XA        4   none  NX
+16f  B DE G I  L  OPQR          tmpa  -> DE        4   none  RNI
+170  BCD   HIJ L  OPQRSTU       Q     -> tmpc                            011010101.00  AAD
+171 A CD F     LMN     T        X     -> tmpb      7   UNC   CORX
+172 A CD  G     M     S         A     -> tmpb      1   ADD   tmpc
+173     EF HIJ L N   R  U       ZERO  -> X         5   UNC   AAEND
+174 A CD   HIJ L  OPQRSTU       Q     -> tmpb                            011010100.00  AAM
+175   CD F HIJ L  OPQRSTU       ZERO  -> tmpa
+176  BCD  G    LMN     TU       A     -> tmpc      7   UNC   CORD
+177 ABC  F HI   MNO Q S                            1   COM1  tmpc
+178     EF  I   MN      U       SIGMA -> X         1   PASS  tmpa, NX    011010100.01
+179    D F  I KL  OPQR          SIGMA -> A         4   none  RNI      F                AAEND
+17a
+17b
+17c A CD F   J  MN   R TU       M     -> tmpb      1   XI    tmpb, NX    00100????.00  INC/DEC
+17d  B  EF  I KL  OPQR          SIGMA -> M         4   none  RNI      F
+17e ABC  F HI  L  OPQRSTU
+17f   CD F HIJ  M O QRS         ZERO  -> tmpa      1   RRCY  tmpc                      CORX
+180  BCD F  I  L      STU       SIGMA -> tmpc      4   MAXC  none        00100????.01
+181 ABC  F HI    NO  R                             0   NCY      8
+182 ABC  F HI   M                                  1   ADD   tmpa
+183   CD F  I KL  OPQRSTU       SIGMA -> tmpa                         F
+184 ABC  F HI   M O QR                             1   RRCY  tmpa        00100????.10
+185   CD F  I   M O QRS         SIGMA -> tmpa      1   RRCY  tmpc
+186  BCD F  I     O   S U       SIGMA -> tmpc      0   NCZ      5
+187 ABC  F HI  L  OPQRS                            4   none  RTN
+188 ABC  F HI   M  P R                             1   SUBT  tmpa        100100010.00  CORD
+189 ABC  F  I KL      STU       SIGMA -> no dest   4   MAXC  none     F
+18a ABC  F HI  L NO   STU                          5   NCY   INT0
+18b ABC  F HI   M O Q S                            1   LRCY  tmpc
+18c  BCD F  I   M O Q           SIGMA -> tmpc      1   LRCY  tmpa        100100010.01
+18d   CD F  I   M  P R          SIGMA -> tmpa      1   SUBT  tmpa
+18e ABC  F HI     OPQRS U                          0   CY      13
+18f ABC  F  I KL  OPQRSTU       SIGMA -> no dest                      F
+190 ABC  F HI    NO  RST                           0   NCY     14        100100010.10
+191 ABC  F HI     O    TU                          0   NCZ      3
+192 ABC  F HI   M O Q S                            1   LRCY  tmpc
+193  BCD F  I  L  OPQRSTU       SIGMA -> tmpc
+194 ABC  F  I  L  OPQRS         SIGMA -> no dest   4   none  RTN         100100010.11
+195 ABC  F HI  L   P  STU                          4   RCY   none
+196   CD F  I     O    TU       SIGMA -> tmpa      0   NCZ      3
+197 ABC  F HI    N   R T                           0   UNC     10
+198 A C EF  IJ   N    ST        CR    -> tmpbL     0   UNC      6        100000000.00  INT1
+199 A C EF  IJ   N    ST        CR    -> tmpbL     0   UNC      6                      INT2
+19a  BCD FG    LM  P  STU       XA    -> tmpc      6   IRQ   D0,P0                     IRQ
+19b    DE   IJ L  OPQR TU       OPR   -> XA        4   none  SUSP
+19c A C EF     L  OPQRSTU       X     -> tmpbL                           100000000.01
+19d    DE G IJ L  OPQRSTU       tmpc  -> XA
+19e ABC EF HIJ  M      T        ZERO  -> tmpbH     1   ADD   tmpb                      INTR
+19f A CD F  I  L  OPQRSTU       SIGMA -> tmpb
+1a0 A C  F  I  LM     S         SIGMA -> IND       6   R     D0,P2       100000000.10
+1a1 A CD    IJ  MNOP RS         OPR   -> tmpb      1   DEC2  tmpc
+1a2  BCD FG I  LM     STU       SP    -> tmpc      6   R     D0,P0
+1a3   CD    IJ L  OPQR TU       OPR   -> tmpa      4   none  SUSP
+1a4  BC   GHIJ L    QRSTU       F     -> OPR       4   CITF  none        100000000.11
+1a5 A C  F  I  LM O  R TU       SIGMA -> IND       6   w     DS,P0
+1a6  BCD   HI  L N    S U       IND   -> tmpc      5   UNC   FARCALL2
+1a7 A C EF  IJ   N    ST        CR    -> tmpbL     0   UNC      6                      INT0
+1a8 A C E  HIJ L N    ST        Q     -> tmpbL     5   UNC   INTR        011001101.00  INT ib
+1a9  BC   GHI  L N    ST        tmpb  -> OPR       5   UNC   INTR
+1aa
+1ab
+1ac ABC  F HI  L  OPQRSTU                                                011001110.00  INTO
+1ad ABC  F HI     OP   TU                          0   OF       3
+1ae ABC  F HI  L  OPQR                             4   none  RNI
+1af A C EF  IJ L N    ST        CR    -> tmpbL     5   UNC   INTR
+1b0 ABC  F HI    N     T                           0   UNC      2        011001100.00  INT 3
+1b1 ABC  F HI  L  OPQRSTU
+1b2 A C EF  IJ L N    ST        CR    -> tmpbL     5   UNC   INTR
+1b3
+1b4 ABC  F  I  L  OPQRSTU       SIGMA -> no dest                         100100011.00  PREIDIV
+1b5 ABC  F HI    NO   STU                          0   NCY      7
+1b6 ABC  F HI   MNO QRS                            1   NEG   tmpc                      NEGATE
+1b7  BCD F  I K MNO Q           SIGMA -> tmpc      1   COM1  tmpa     F
+1b8 ABC  F HI     OPQ ST                           0   CY       6        100100011.01
+1b9 ABC  F HI   MNO QR                             1   NEG   tmpa
+1ba   CD F  I  L    Q STU       SIGMA -> tmpa      4   CF1   none
+1bb ABC  F HI   M O Q  T                           1   LRCY  tmpb
+1bc ABC  F  I   MNO QR T        SIGMA -> no dest   1   NEG   tmpb        100100011.10
+1bd ABC  F HI    NO  R TU                          0   NCY     11
+1be A CD F  I  L    Q S         SIGMA -> tmpb      4   CF1   RTN
+1bf ABC  F HI  L  OPQRS                            4   none  RTN
+1c0 ABC  F  I   MNO QRS         SIGMA -> no dest   1   NEG   tmpc        100100011.11  PREIMUL
+1c1 ABC  F HI    NO   STU                          0   NCY      7
+1c2  BCD F  I  L    Q STU       SIGMA -> tmpc      4   CF1   none
+1c3 ABC  F HI    N    STU                          0   UNC      7
+1c4 ABC  F HI  L NO   STU                          5   NCY   INT0        100100100.00  POSTIDIV
+1c5 ABC  F HI   M O Q  T                           1   LRCY  tmpb
+1c6 ABC  F  I   MNO QR          SIGMA -> no dest   1   NEG   tmpa
+1c7 ABC  F HI    NO   S U                          0   NCY      5
+1c8   CD F  I  L  OPQRSTU       SIGMA -> tmpa                            100100100.01
+1c9 ABC  F HI   MNO   S                            1   INC   tmpc
+1ca ABC  F HI    NO QR                             0   F1       8
+1cb ABC  F HI   MNO Q S                            1   COM1  tmpc
+1cc ABC  F HI  L   PQ S                            4   CCOF  RTN         100100100.10
+1cd A CD F HIJ  M O Q S         ZERO  -> tmpb      1   LRCY  tmpc                      IMULCOF
+1ce ABC  F  I   M   Q           SIGMA -> no dest   1   ADC   tmpa
+1cf ABC  F  I KL  OPQRSTU       SIGMA -> no dest                      F
+1d0 ABC  F HI      PQR                             0   Z        8        100100100.11
+1d1 ABC  F HI  L   PQRS                            4   SCOF  RTN
+1d2 ABC  F HI   MN                                 1   PASS  tmpa                      MULCOF
+1d3 ABC  F  I K  N   RS         SIGMA -> no dest   0   UNC     12     F
+1d4   CD FGH J L  OPQRSTU       HL    -> tmpa                            101000000.00  [BX+SI]
+1d5 A CD FG IJ L  OPQRSTU       IJ    -> tmpb
+1d6   CD F  I  L N     TU       SIGMA -> tmpa      5   UNC   EAOFFSET
+1d7   CD FGHI  L  OPQRSTU       MP    -> tmpa                                          [BP+DI]
+1d8 A CD FGHIJ L  OPQRSTU       IK    -> tmpb                            101000000.01
+1d9   CD F  I  L N     TU       SIGMA -> tmpa      5   UNC   EAOFFSET
+1da   CD FGH J   N    S         HL    -> tmpa      0   UNC      4                      [BX+DI]
+1db   CD FGHI    N      U       MP    -> tmpa      0   UNC      1                      [BP+SI]
+1dc   C E  HIJ L  OPQRSTU       Q     -> tmpaL                           101000000.10  [iw]
+1dd  BC E  HIJ L N    S         Q     -> tmpaH     5   UNC   EAFINISH
+1de A C E  HIJ      QRS         Q     -> tmpbL     0   MOD1    12                      [i]
+1df ABC E  HIJ L  OPQRSTU       Q     -> tmpbH
+1e0   CD F  I  L N    S         SIGMA -> tmpa      5   UNC   EAFINISH    101000000.11
+1e1 A C   G I  LM    RSTU       tmpa  -> IND       6   R     DD,P0                     EALOAD
+1e2 A CD    IJ L  OPQRS         OPR   -> tmpb      4   none  RTN
+1e3 A C   G I  L  OPQRS         tmpa  -> IND       4   none  RTN                       EADONE
+1e4 AB   F HIJ L  OPQR TU       ZERO  -> RD        4   none  SUSP        110000000.00  RESET
+1e5 A    F HI  L  OPQRSTU       ONES  -> RC
+1e6   C  F HIJ L     RSTU       ZERO  -> PC        4   FLUSH none
+1e7 ABCD F HIJ L  OPQRSTU       ZERO  -> F
+1e8      F HIJ L  OPQRSTU       ZERO  -> RA                              110000000.01
+1e9  B   F HIJ L  OPQR          ZERO  -> RS        4   none  RNI
+1ea
+1eb
+1ec   C  F  I  L     R          SIGMA -> PC        4   FLUSH RNI         010011011.10  WAIT continued
+1ed
+1ee
+1ef
+1f0 A  DE G IJ   N P    U       tmpc  -> BC        0   NZ       1        01010101?.01  STOS continued
+1f1 ABC  F HI  L  OPQR                             4   none  RNI
+1f2
+1f3
+1f4 ABC  F HI  L  OPQR                             4   none  RNI         01010?11?.11  CMPS/SCAS continued
+1f5
+1f6
+1f7
+1f8  B  E   IJ   NO Q S U       OPR   -> M         0   F1       5        01010?10?.10  MOVS/LODS continued
+1f9 ABC  F HI  L  OPQR                             4   none  RNI
+1fa   C E  HI K M O Q S         IND   -> tmpaL     1   LRCY  tmpc     F
+1fb
+1fc ABC  F HI  L  OPQR                             4   none  RNI         011100011.01  JCXZ continued
+1fd
+1fe   CD  G    L NOP  S U       A     -> tmpa      5   INT   FARCALL2
+1ff  B D F H  KL N    ST        B     -> E         5   UNC   INTR     F

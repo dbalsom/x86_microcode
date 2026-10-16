@@ -1,0 +1,117 @@
+lower registers:
+X  == AH
+B  == CH
+D  == DH
+H  == BH
+A  == AL
+C  == CL
+E  == DL
+L  == BL
+XA == AX
+BC == CX
+DE == DX
+HL == BX
+SP == SP
+MP == BP
+IJ == SI
+IK == DI
+M  == register specified by low 3 bits of opcode if no modrm byte, or rm field of modrm byte, or OPR if modrm specifies memory.
+R  == register specified by r field of modrm byte
+F  == FLAGS
+
+upper registers:
+RC  == CS
+RD  == DS
+RS  == SS
+RA  == ES
+PC  == program counter
+IND == address offset for bus accesses
+OPR == last word read from or written to bus, excluding prefetches
+
+other registers and locations:
+tmpa  == hidden temporary register a (sometimes called tmp2 in patent)
+tmpb  == hidden temporary register b (implicit second operand in 2-operand ALU operations)
+tmpc  == hidden temporary register c
+tmpaL == low byte of tmpa register
+tmpaH == high byte of tmpa register
+tmpbL == low byte of tmpb register
+tmpbH == high byte of tmpb register
+IND   == offset to read from or write to
+SIGMA == result of last ALU operation
+Q     == read next byte from prefetch queue
+ZERO  == all bits 0
+ONES  == all bits 1
+
+instruction types:
+0 == short (conditional or unconditional) jump   00ccccdddd  c == condition  d == destination
+1 == select ALU operation and input register     01ooooossn  o == operation  s == source  n == NX bit
+4 == miscellaneous                               100xxxxyyy
+5 == long (conditional or unconditional) jump    101cccdddd  c == condition  d == detination
+6 == bus operations                              110dirssuu  d == direction  i == IRQ acknowledge  r == RNI  ss == segment  uu == IND update
+7 == long (conditional or unconditional) call    111cccdddd  c == condition  d == detination
+
+conditions for either long or short jump:
+F1  == jump if either F1 flag is active
+X0  == jump if bit 3 of opcode is 1
+UNC == unconditional jump
+NCY == jump if no carry
+INT == jump if there is an interrupt pending
+NZ  == jump if not zero
+XC  == jump if condition specified by low 4 bits of opcode is true
+
+conditions for short jump only:
+F1ZZ == jump if REPNE flag differs from ZF?
+CY   == jump if carry
+L8   == jump if immediate value is 1 byte
+MOD1 == jump if 1 byte offset in effective address
+NCZ  == jump if internal counter not zero
+NF1  == jump if F1 flag is not active (could also be used in long jump but isn't)
+OF   == jump if overflow flag is set
+TEST == jump if -TEST pin not asserted (used by WAIT)
+Z    == jump if zero
+
+ALU operations:
+ADC  == ADC
+ADD  == ADD
+SUBT == SUB
+AND  == AND
+DEC  == subtract 1
+DEC2 == subtract 2
+INC  == add 1
+INC2 == add 2
+COM1 == ones complement aka NOT
+NEG  == negate
+PASS == pass argument through to SIGMA
+XI   == opcode-dependent operation
+RRCY == RCR == rotate right through carry
+LRCY == RCL == rotate left through carry
+
+Memory access:
+BL == modify IND according to word size and direction flag
+P0 == don't modify IND
+P2 == increment IND by 2
+M2 == decrement IND by 2
+DA == ES
+DD == DS by default, overrideable
+DS == SS
+D0 == segment 0 (used for interrupt vectors and port IO)
+
+other operations:
+MAXC  == set internal counter to 15 or 7 depending on word size
+RNI   == Run Next Instruction (current one is finished)
+RTN   == return to saved location
+F     == update flags register
+R     == initiate memory read cycle
+w/W   == initiate memory write cycle
+IRQ   == initial special IRQ acknowledge bus cycle
+FLUSH == flush prefetch queue
+NX    == next instruction is the last in the microcode routine, begin processing next opcode
+SUSP  == suspend prefetching
+CORR  == correct PC based on number of bytes in prefetch queue (always preceded by SUSP)
+RCY   == reset carry
+CF1   == invert F1 flag
+CCOF  == clear carry and overflow flags
+SCOF  == set carry and overflow flags
+CITF  == clear interrupt and trap flags
+WB    == write back to EA (if EA refers to memory, skip RNI on following instruction and execute the one after that)
+WAIT  == not sure what this does, it occurs when the WAIT instruction finishes

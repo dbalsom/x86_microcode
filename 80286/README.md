@@ -1,12 +1,14 @@
 # The Intel/Harris 80C286 Microcode
 
-The NMOS 80286 microcode array contains 192x280 or 53,760 bits. This array defines 1,536 35-bit words with 8 microcode words per column.
+The 80286 microcode array contains 192x280 or 53,760 bits. This array defines 1,536 35-bit words with 8 microcode words per column.
 
 ## Previous Imaging Efforts
 
 The Intel NMOS 80286 CPU was delayered and imaged, only to discover that the microcode array was implemented as an implant ROM and was unreadable.
 
-In 2026, experiments with NIR photography on a CMOS 80286 revealed that the microcode bits were theoretically readable.
+That photography can be seen [here](http://infosecdj.net/map/intel/80286/infosecdj_nikpa20x/). You can select the polysilicon layer from the layer menu in the upper right; notice that no bits are visible.
+
+In 2026, experiments with NIR photography on a CMOS 80C286 revealed that the microcode bits were theoretically readable.
 
 <img src="images/286-rom-x21-NIR.png" alt="Intel/Harris 80C286 microcode ROM photographed in near-infrared" width="25%" />
 

@@ -1,0 +1,326 @@
+NMOS 80286 PLA match decoder (split into two banks, A and B)
+
+Guilty Parties:
+        Daniel Balsom (GloriousCow)
+
+264 columns: 
+        Bank A: 132 active
+        Bank B: 108 active (24 unused)
+
+MATCH:  the same 12 normalized input bits, in original source-row order.
+        ? = unconstrained. Row-pair logic accounts for each input's polarity.
+        OP7/OP5/OP3/OP1: first row connected matches 1; second row connected matches 0.
+        OP6/OP4/OP2/OP0: first row connected matches 0; second row connected matches 1.
+       
+        Opcode pass:   0 E !REP PE OP7 OP6 OP5 OP4 OP3 OP2 OP1 OP0
+        Feedback pass: 1 E !S0   M S5  S4  R2  R1  R0  S3  S2  S1
+       
+        REP = repeat prefix
+        PE = protected mode.
+
+        E = 0F escape
+        S = six-bit feedback selector
+        M = 0 register (mod=11), 1 memory
+        R = ModR/M `reg` field
+
+        ! means inverted.
+
+OR:     11 connection bits, original output rows top-to-bottom, read left-to-right.
+uADDR:  Microcode address contribution, in hexadecimal.
+SEL:    Feedback selector contribution, in hexadecimal.
+
+        Both read OR top-to-bottom as binary, with no inversion; -- = not applicable.
+        Both columns are filled when a term serves both roles for different opcodes.
+        
+        OR all simultaneously matching terms BEFORE interpreting the result.
+
+        "combined" lists resulting values where this term alone is insufficient;
+        its u: and s: prefixes identify microcode addresses and selectors, respectively.
+
+        F6/F7 s:016/s:017 feed the ModR/M pass; they are not routine addresses.
+
+OPCODES / MODRM: 
+        Opcode bytes are in hexadecimal; ranges are inclusive.
+
+        0F 08-0F means 0F 08 through 0F 0F (the prefix applies to the entire range).
+        /n or /n-m restricts ModR/M.reg for ALL opcodes listed in that row.
+        No / suffix on a feedback row means all eight reg-field values match.
+        
+        Unused columns have no connected outputs and no opcode assignment.
+
+Instruction names describe matched encodings, including reserved/undocumented cases.
+126 of 127 feedback terms have opcode assignments; B071 remains unresolved.
+
+Selector 000 is valid even without an active output term (e.g. ADD r/m,r).
+
+PLA Bank A
+
+TERM | MATCH        | OR          | uADDR | SEL | OPCODES / MODRM                                        | INSTRUCTION CLASS / MNEMONIC
+-----+--------------+-------------+-------+-----+--------------------------------------------------------+-------------------------------------------------------------
+A000 | 00??11011??0 | 00000101100 | --    | 02C | D8, DA, DC, DE                                         | ESC
+A001 | 00??011010?0 | 01011110011 | 2F3   | --  | 68, 6A                                                 | PUSH immediate
+A002 | 00??10011100 | 00001111001 | 079   | --  | 9C                                                     | PUSHF
+A003 | 00??110011?0 | 01000011000 | 218   | --  | CC, CE                                                 | INT 3; INTO; combined u:218, u:21C
+A004 | 00??10001100 | 00000001101 | --    | 00D | 8C                                                     | MOV r/m16,Sreg
+A005 | 00??11010100 | 00011011011 | 0DB   | --  | D4                                                     | AAM
+A006 | 00??11000100 | 00000111001 | --    | 039 | C4                                                     | LES
+A007 | 00??10011000 | 00101001111 | 14F   | --  | 98                                                     | CBW
+A008 | 00??11101000 | 00110110101 | 1B5   | --  | E8                                                     | CALL near relative
+A009 | 00??11001000 | 01100000001 | 301   | --  | C8                                                     | ENTER
+A010 | 00??01100000 | 01011100011 | 2E3   | --  | 60                                                     | PUSHA
+A011 | 00??0110111? | 01100011001 | 319   | --  | 6E-6F                                                  | OUTS; combined u:319, u:339
+A012 | 000?1010111? | 00110000011 | 183   | --  | AE-AF                                                  | SCAS [REP; inferred]
+A013 | 00??11001001 | 01100010100 | 314   | --  | C9                                                     | LEAVE
+A014 | 000?1010101? | 00110100110 | 1A6   | --  | AA-AB                                                  | STOS [REP; inferred]
+A015 | 000?0110110? | 01100101001 | 329   | --  | 6C-6D                                                  | INS [REP; inferred]
+A016 | 000?1010110? | 00110010110 | 196   | --  | AC-AD                                                  | LODS [REP; inferred]
+A017 | 000?1010010? | 00101010011 | 153   | --  | A4-A5                                                  | MOVS [REP; inferred]
+A018 | 00??11011001 | 00000101000 | --    | 028 | D9                                                     | ESC
+A019 | 001?1010111? | 00110010001 | 191   | --  | AE-AF                                                  | SCAS [no REP; inferred]
+A020 | 00??01100001 | 01011101010 | 2EA   | --  | 61                                                     | POPA
+A021 | 001?1010101? | 00110110010 | 1B2   | --  | AA-AB                                                  | STOS [no REP; inferred]
+A022 | 00??10011001 | 00101010001 | 151   | --  | 99                                                     | CWD
+A023 | 001?1010110? | 00110100010 | 1A2   | --  | AC-AD                                                  | LODS [no REP; inferred]
+A024 | 001?1010010? | 00101100011 | 163   | --  | A4-A5                                                  | MOVS [no REP; inferred]
+A025 | 00??11010101 | 00011100100 | 0E4   | --  | D5                                                     | AAD
+A026 | 00?110001110 | 00000000010 | --    | 002 | 8E                                                     | MOV Sreg,r/m16 [protected mode]; combined s:00E
+A027 | 00??10001101 | 00000111000 | --    | 038 | 8D                                                     | LEA
+A028 | 00??11000101 | 00000111010 | --    | 03A | C5                                                     | LDS
+A029 | 00??1?001110 | 00000001100 | 00C   | 00C | 8E, CE                                                 | MOV Sreg,r/m16; INTO; combined s:00C, s:00E, u:21C
+A030 | 00??11110101 | 01001100111 | 267   | --  | F5                                                     | CMC
+A031 | 10??001??11? | 01001010101 | 255   | --  | 8C, 8E /4-7                                            | Invalid opcode: MOV to/from Sreg (invalid Sreg)
+A032 | 100?01111010 | 01001010101 | 255   | --  | FF /7                                                  | Invalid opcode: reserved
+A033 | 10??011??000 | 01001010101 | 255   | --  | 8F, C6-C7 /4-7                                         | Invalid opcode: reserved POP encoding; reserved MOV encoding
+A034 | 10??0101?000 | 01001010101 | 255   | --  | 8F, C6-C7 /2-3                                         | Invalid opcode: reserved POP encoding; reserved MOV encoding
+A035 | 10??01001000 | 01001010101 | 255   | --  | 8F, C6-C7 /1                                           | Invalid opcode: reserved POP encoding; reserved MOV encoding
+A036 | 101?0000111? | 01001010101 | 255   | --  | 8E /1                                                  | Invalid opcode: MOV Sreg,r/m16 (CS)
+A037 | 101?011??010 | 01001010101 | 255   | --  | FE /4-7                                                | Invalid opcode: reserved
+A038 | 101?0101?010 | 01001010101 | 255   | --  | FE /2-3                                                | Invalid opcode: reserved
+A039 | 10?11001?10? | 01001111010 | 27A   | --  | D9, DB, DD, DF /2-3                                    | ESC [memory]
+A040 | 10?11000?10? | 01010000101 | 285   | --  | D9, DB, DD, DF /0-1                                    | ESC [memory]
+A041 | 10?10101?011 | 00010011101 | 09D   | --  | F6-F7 /2-3                                             | NOT/NEG r/m8/16 [memory]
+A042 | 10?10100?011 | 00010110110 | 0B6   | --  | F6-F7 /0-1                                             | TEST r/m8/16 [memory]
+A043 | 10?10100?010 | 00010011101 | 09D   | --  | FE-FF /0-1                                             | INC/DEC [memory]
+A044 | 10011011?10? | 01001111010 | 27A   | --  | DB, DF /6-7                                            | ESC [memory]
+A045 | 100100???01? | 00010110001 | 0B1   | --  | 3A-3B, 84-85                                           | CMP r,r/m; TEST r/m,r [memory]; combined u:0B1, u:0BB
+A046 | 10010110?011 | 00011111011 | 0FB   | --  | F7 /4-5                                                | MUL/IMUL r/m16 [memory]
+A047 | 100101111011 | 00101000010 | 142   | --  | F7 /7                                                  | IDIV r/m16 [memory]
+A048 | 100101110011 | 00100010110 | 116   | --  | F7 /6                                                  | DIV r/m16 [memory]
+A049 | 100111???101 | 01101000011 | 343   | --  | 62                                                     | BOUND [memory]
+A050 | 100100???101 | 00000011010 | 01A   | --  | 8A-8B                                                  | MOV r,r/m [memory]
+A051 | 10011010?101 | 01010000101 | 285   | --  | DF /4-5                                                | ESC [memory]
+A052 | 100101???001 | 01111110011 | 3F3   | --  | 63                                                     | ARPL [memory] [protected mode]
+A053 | 1001000??110 | 00000110000 | 030   | --  | 8C /0-3                                                | MOV r/m16,Sreg (ES/CS/SS/DS) [memory]
+A054 | 100100???010 | 00000001010 | 00A   | --  | 3A-3B                                                  | CMP r,r/m [memory]; combined u:0BB
+A055 | 100101011010 | 00111001010 | 1CA   | --  | FF /3                                                  | CALL far indirect [memory]
+A056 | 100101101010 | 00111101111 | 1EF   | --  | FF /5                                                  | JMP far indirect [memory]
+A057 | 100101110010 | 00000110011 | 033   | --  | FF /6                                                  | PUSH r/m16 [memory]
+A058 | 100101010010 | 00110111110 | 1BE   | --  | FF /2                                                  | CALL near indirect [memory]
+A059 | 100101100010 | 00111100001 | 1E1   | --  | FF /4                                                  | JMP near indirect [memory]
+A060 | 100111???100 | 00001101110 | 06E   | --  | C4                                                     | LES [memory]
+A061 | 100101???100 | 00010100101 | 0A5   | --  | D0-D1                                                  | Rotate/shift r/m,1 [memory]
+A062 | 100100???100 | 01011111100 | 2FC   | --  | 69, 6B                                                 | IMUL r,r/m,imm16; IMUL r,r/m,imm8 [memory]
+A063 | 100110101100 | 01010000101 | 285   | --  | DB /5                                                  | ESC [memory]
+A064 | 100110100100 | 01001111010 | 27A   | --  | DB /4                                                  | ESC [memory]
+A065 | 100100???000 | 00010010101 | 095   | --  | 02-03, 0A-0B, 12-13, 1A-1B, 22-23, 2A-2B, 32-33        | ADD/OR/ADC/SBB/AND/SUB/XOR r,r/m [memory]
+A066 | 100101000000 | 00000100010 | 022   | --  | C6-C7 /0                                               | MOV r/m,imm [memory]
+A067 | 10110001?11? | 00000101001 | 029   | --  | 8E /2-3                                                | MOV Sreg,r/m16 (SS/DS) [memory]
+A068 | 10110000011? | 00000101001 | 029   | --  | 8E /0                                                  | MOV Sreg,r/m16 (ES) [memory]
+A069 | 10111011110? | 01011000100 | 2C4   | --  | D9, DD /7                                              | ESC [memory]
+A070 | 10111011010? | 01001110110 | 276   | --  | D9, DD /6                                              | ESC [memory]
+A071 | 1011000??011 | 00010001111 | 08F   | --  | 80-83 /0-3                                             | ADD/OR/ADC/SBB r/m,imm [memory]
+A072 | 10110110?011 | 00011110111 | 0F7   | --  | F6 /4-5                                                | MUL/IMUL r/m8 [memory]
+A073 | 10110010?011 | 00010001111 | 08F   | --  | 80-83 /4-5                                             | AND/SUB r/m,imm [memory]
+A074 | 101101111011 | 00100110101 | 135   | --  | F6 /7                                                  | IDIV r/m8 [memory]
+A075 | 101100111011 | 00010110110 | 0B6   | --  | 80-83 /7                                               | CMP r/m,imm [memory]
+A076 | 101101110011 | 00100001101 | 10D   | --  | F6 /6                                                  | DIV r/m8 [memory]
+A077 | 101100110011 | 00010001111 | 08F   | --  | 80-83 /6                                               | XOR r/m,imm [memory]
+A078 | 101111???101 | 00001100111 | 067   | --  | C5                                                     | LDS [memory]
+A079 | 101101???101 | 00011001001 | 0C9   | --  | D2-D3                                                  | Rotate/shift r/m,CL [memory]
+A080 | 101100???101 | 00000010101 | 015   | --  | 88-89                                                  | MOV r/m,r [memory]
+A081 | 101110101101 | 01001111010 | 27A   | --  | DD /5                                                  | ESC [memory]
+A082 | 10111010010? | 01001110010 | 272   | --  | D9, DD /4                                              | ESC [memory]
+A083 | 101?10???110 | 01010000101 | 285   | --  | D8, DA, DC, DE                                         | ESC; combined u:285, u:2AD
+A084 | 101100???010 | 00010110001 | 0B1   | --  | 38-39                                                  | CMP r/m,r [memory]
+A085 | 101111???100 | 00001100100 | 064   | --  | 8D                                                     | LEA [memory]
+A086 | 101101???100 | 00011010010 | 0D2   | --  | C0-C1                                                  | Rotate/shift r/m,imm8 [memory]
+A087 | 101100???100 | 00001001101 | 04D   | --  | 86-87                                                  | XCHG r/m,r [memory]
+A088 | 101110101100 | 01001110010 | 272   | --  | D9 /5                                                  | ESC [memory]
+A089 | 101100???000 | 00010001001 | 089   | --  | 00-01, 08-09, 10-11, 18-19, 20-21, 28-29, 30-31        | ADD/OR/ADC/SBB/AND/SUB/XOR r/m,r [memory]
+A090 | 101101000000 | 00000111100 | 03C   | --  | 8F /0                                                  | POP r/m16 [memory]
+A091 | 10?011???10? | 01001010101 | 255   | --  | 62, 8D, C4-C5                                          | Invalid opcode: BOUND/LEA/LES/LDS [register]
+A092 | 10?00101?011 | 00010011011 | 09B   | --  | F6-F7 /2-3                                             | NOT/NEG r/m8/16 [register]
+A093 | 10?00100?011 | 00010101101 | 0AD   | --  | F6-F7 /0-1                                             | TEST r/m8/16 [register]
+A094 | 10?000???101 | 00000011000 | 018   | --  | 88-8B                                                  | MOV r/m,r; MOV r,r/m [register]
+A095 | 10?000???010 | 00010101011 | 0AB   | --  | 38-3B                                                  | CMP r/m,r; CMP r,r/m [register]
+A096 | 10?00100?010 | 00010011011 | 09B   | --  | FE-FF /0-1                                             | INC/DEC [register]
+A097 | 10?000???000 | 00010000001 | 081   | --  | 00-03, 08-0B, 10-13, 18-1B, 20-23, 28-2B, 30-33        | ADD/OR/ADC/SBB/AND/SUB/XOR r/m,r; ADD/OR/ADC/SBB/AND/SUB/XOR r,r/m [register]
+A098 | 10?0100??10? | 01010101101 | 2AD   | --  | D9, DB, DD, DF /0-3                                    | ESC [register]
+A099 | 100000???011 | 00010101011 | 0AB   | --  | 84-85                                                  | TEST r/m,r [register]
+A100 | 10000110?011 | 00011110001 | 0F1   | --  | F7 /4-5                                                | MUL/IMUL r/m16 [register]
+A101 | 100001111011 | 00100101010 | 12A   | --  | F7 /7                                                  | IDIV r/m16 [register]
+A102 | 100001110011 | 00100000110 | 106   | --  | F7 /6                                                  | DIV r/m16 [register]
+A103 | 1000101??101 | 01011000011 | 2C3   | --  | DF /4-7                                                | ESC [register]
+A104 | 100001???001 | 01111101011 | 3EB   | --  | 63                                                     | ARPL [register] [protected mode]
+A105 | 1000000??110 | 00000101110 | 02E   | --  | 8C /0-3                                                | MOV r/m16,Sreg (ES/CS/SS/DS) [register]
+A106 | 100001011010 | 01001010101 | 255   | --  | FF /3                                                  | Invalid opcode: CALL far indirect [register]
+A107 | 100001101010 | 01001010101 | 255   | --  | FF /5                                                  | Invalid opcode: JMP far indirect [register]
+A108 | 100001110010 | 00000111001 | 039   | --  | FF /6                                                  | PUSH r/m16 [register]
+A109 | 100001010010 | 00110111100 | 1BC   | --  | FF /2                                                  | CALL near indirect [register]
+A110 | 100001100010 | 00111011111 | 1DF   | --  | FF /4                                                  | JMP near indirect [register]
+A111 | 100001???100 | 00010100011 | 0A3   | --  | D0-D1                                                  | Rotate/shift r/m,1 [register]
+A112 | 100000???100 | 01011110110 | 2F6   | --  | 69, 6B                                                 | IMUL r,r/m,imm16; IMUL r,r/m,imm8 [register]
+A113 | 1000101??100 | 01001111110 | 27E   | --  | DB /4-7                                                | ESC [register]
+A114 | 100001000000 | 00000100101 | 025   | --  | C6-C7 /0                                               | MOV r/m,imm [register]
+A115 | 1010101??10? | 01010101101 | 2AD   | --  | D9, DD /4-7                                            | ESC [register]
+A116 | 10100001?111 | 01101010101 | 355   | --  | 8E /2-3                                                | MOV Sreg,r/m16 (SS/DS) [register] [protected mode]
+A117 | 101000000111 | 01101010101 | 355   | --  | 8E /0                                                  | MOV Sreg,r/m16 (ES) [register] [protected mode]
+A118 | 1010000??011 | 00010000011 | 083   | --  | 80-83 /0-3                                             | ADD/OR/ADC/SBB r/m,imm [register]
+A119 | 10100110?011 | 00011101011 | 0EB   | --  | F6 /4-5                                                | MUL/IMUL r/m8 [register]
+A120 | 10100010?011 | 00010000011 | 083   | --  | 80-83 /4-5                                             | AND/SUB r/m,imm [register]
+A121 | 101001111011 | 00100011111 | 11F   | --  | F6 /7                                                  | IDIV r/m8 [register]
+A122 | 101000111011 | 00010101101 | 0AD   | --  | 80-83 /7                                               | CMP r/m,imm [register]
+A123 | 101001110011 | 00011111111 | 0FF   | --  | F6 /6                                                  | DIV r/m8 [register]
+A124 | 101000110011 | 00010000011 | 083   | --  | 80-83 /6                                               | XOR r/m,imm [register]
+A125 | 101001???10? | 00011000001 | 0C1   | --  | C0-C1, D2-D3                                           | Rotate/shift r/m,imm8/CL [register]; combined u:0C1, u:0C7
+A126 | 101010???110 | 00000101000 | 028   | --  | D8, DA, DC, DE                                         | ESC [register]; combined u:2AD
+A127 | 10100001?110 | 00000100111 | 027   | --  | 8E /2-3                                                | MOV Sreg,r/m16 (SS/DS) [register] [real mode]
+A128 | 101000000110 | 00000100111 | 027   | --  | 8E /0                                                  | MOV Sreg,r/m16 (ES) [register] [real mode]
+A129 | 101001???100 | 00000000110 | 006   | --  | C0-C1                                                  | Rotate/shift r/m,imm8 [register]; combined u:0C7
+A130 | 101000???100 | 00001010010 | 052   | --  | 86-87                                                  | XCHG r/m,r [register]
+A131 | 101001000000 | 00001000001 | 041   | --  | 8F /0                                                  | POP r/m16 [register]
+
+PLA Bank B
+
+B000 | 00??10011110 | 00001110111 | 077   | --  | 9E                                                     | SAHF
+B001 | 00??10011010 | 00111000101 | 1C5   | --  | 9A                                                     | CALL far immediate
+B002 | 00??11010110 | 01001101001 | 269   | --  | D6                                                     | undocumented D6
+B003 | 00??000??110 | 00001000101 | 045   | --  | 06, 0E, 16, 1E                                         | PUSH segment
+B004 | 00??11100010 | 00111000000 | 1C0   | --  | E2                                                     | LOOP; combined u:1FB
+B005 | 00??11111110 | 00000010100 | --    | 014 | FE                                                     | INC/DEC r/m8 group
+B006 | 00??11110110 | 00000010110 | --    | 016 | F6                                                     | unary group r/m8
+B007 | 00??11101010 | 00111100110 | 1E6   | --  | EA                                                     | JMP far immediate
+B008 | 00???1100010 | 00000111011 | 03B   | 03B | 62, E2                                                 | BOUND; LOOP; combined s:03B, u:1FB
+B009 | 000?1010011? | 00101101000 | 168   | --  | A6-A7                                                  | CMPS [REP; inferred]
+B010 | 001?1010011? | 00101111100 | 17C   | --  | A6-A7                                                  | CMPS [no REP; inferred]
+B011 | 001?0110111? | 01100111000 | 338   | --  | 6E-6F                                                  | OUTS [no REP; inferred]; combined u:339
+B012 | 001?0110110? | 01100111110 | 33E   | --  | 6C-6D                                                  | INS [no REP; inferred]
+B013 | 00?101100011 | 00000010011 | --    | 013 | 63                                                     | ARPL [protected mode]
+B014 | 00?001100011 | 00000011111 | --    | 01F | 63                                                     | ARPL [real mode]
+B015 | 00?111110100 | 01001101101 | 26D   | --  | F4                                                     | HLT [protected mode]
+B016 | 00?011110100 | 01001101111 | 26F   | --  | F4                                                     | HLT [real mode]
+B017 | 00??11001101 | 01000100010 | 222   | --  | CD                                                     | INT imm8
+B018 | 00??10011101 | 00001111100 | 07C   | --  | 9D                                                     | POPF
+B019 | 00??110111?1 | 00000101010 | --    | 02A | DD, DF                                                 | ESC; combined s:02A, s:02B
+B020 | 00??11100011 | 01000001000 | 208   | --  | E3                                                     | JCXZ
+B021 | 00??10011011 | 01010111001 | 2B9   | --  | 9B                                                     | WAIT
+B022 | 00??11011?11 | 00000101001 | --    | 029 | DB, DF                                                 | ESC; combined s:029, s:02B
+B023 | 00??11010111 | 00001100000 | 060   | --  | D7                                                     | XLAT
+B024 | 00??11110111 | 00000000010 | --    | 002 | F7                                                     | unary group r/m16; combined s:017
+B025 | 00??00000111 | 00001001000 | 048   | --  | 07                                                     | POP ES
+B026 | 00??10001111 | 00000010000 | --    | 010 | 8F                                                     | POP r/m16 group
+B027 | 00??11001111 | 01001011111 | 25F   | --  | CF                                                     | IRET
+B028 | 00??0001?111 | 00001001000 | 048   | --  | 17, 1F                                                 | POP segment
+B029 | 00??10011111 | 00001110101 | 075   | --  | 9F                                                     | LAHF
+B030 | 00??1111?111 | 00000010101 | --    | 015 | F7, FF                                                 | unary group r/m16; INC/DEC/CALL/JMP/PUSH r/m16 group; combined s:015, s:017
+B031 | 00??0010?111 | 00011011000 | 0D8   | --  | 27, 2F                                                 | DAA; DAS
+B032 | 00??0011?111 | 00011010101 | 0D5   | --  | 37, 3F                                                 | AAA; AAS
+B033 | 00??011010?1 | 00000001001 | --    | 009 | 69, 6B                                                 | IMUL immediate
+B034 | 00??111010?1 | 00111011010 | 1DA   | --  | E9, EB                                                 | JMP relative
+B035 | 00??1100000? | 00000011000 | --    | 018 | C0-C1                                                  | shift immediate
+B036 | 00??1010000? | 00000011110 | 01E   | --  | A0-A1                                                  | MOV accumulator moffs
+B037 | 00??1110000? | 01000000011 | 203   | --  | E0-E1                                                  | LOOP condition
+B038 | 00??1101000? | 00000011001 | --    | 019 | D0-D1                                                  | shift 1/CL
+B039 | 00??1000100? | 00000001010 | --    | 00A | 88-89                                                  | MOV r/m/register
+B040 | 00??1010100? | 00010101111 | 0AF   | --  | A8-A9                                                  | TEST accumulator
+B041 | 00??1100101? | 01000010010 | 212   | --  | CA-CB                                                  | RET far imm16; RET far
+B042 | 00??1000010? | 00000000111 | --    | 007 | 84-85                                                  | TEST r/m
+B043 | 00??1110010? | 00001010101 | 055   | --  | E4-E5                                                  | IN immediate/DX
+B044 | 00??00???10? | 00010000110 | 086   | --  | 04-05, 0C-0D, 14-15, 1C-1D, 24-25, 2C-2D, 34-35, 3C-3D | ALU accumulator immediate (ADD/OR/ADC/SBB/AND/SUB/XOR/CMP); combined u:086, u:0AF
+B045 | 00??1110110? | 00001011001 | 059   | --  | EC-ED                                                  | IN immediate/DX
+B046 | 00??0011110? | 00000101101 | 02D   | --  | 3C-3D                                                  | ALU accumulator immediate (CMP); combined u:0AF
+B047 | 00??1111110? | 01001100111 | 267   | --  | FC-FD                                                  | CLD; STD
+B048 | 00??1100001? | 01000001110 | 20E   | --  | C2-C3                                                  | RET near imm16; RET near
+B049 | 00??1010001? | 00000010101 | 015   | --  | A2-A3                                                  | MOV accumulator moffs
+B050 | 00??1101001? | 00000011010 | --    | 01A | D2-D3                                                  | shift 1/CL
+B051 | 00??00???01? | 00000000001 | --    | 001 | 02-03, 0A-0B, 12-13, 1A-1B, 22-23, 2A-2B, 32-33, 3A-3B | ALU register destination (ADD/OR/ADC/SBB/AND/SUB/XOR/CMP); combined s:001, s:005
+B052 | 00??1000101? | 00000001011 | --    | 00B | 8A-8B                                                  | MOV r/m/register
+B053 | 00??001110?? | 00000000100 | --    | 004 | 38-3B                                                  | CMP r/m8,r8; CMP r/m16,r16; CMP r8,r/m8; CMP r16,r/m16; combined s:004, s:005
+B054 | 00??1000011? | 00000001000 | --    | 008 | 86-87                                                  | XCHG r/m
+B055 | 00??1100011? | 00000010001 | --    | 011 | C6-C7                                                  | MOV immediate r/m
+B056 | 00??1110011? | 00001011011 | 05B   | --  | E6-E7                                                  | OUT immediate/DX
+B057 | 00??1110111? | 00001011110 | 05E   | --  | EE-EF                                                  | OUT immediate/DX
+B058 | 00??100000?? | 00000000110 | --    | 006 | 80-83                                                  | ALU immediate group (ALU)
+B059 | 00??111110?? | 01001100111 | 267   | --  | F8-FB                                                  | CLC; STC; CLI; STI
+B060 | 00??011001?? | 01001010101 | 255   | --  | 64-67                                                  | undefined on 80286
+B061 | 00??10010??? | 00001010010 | 052   | --  | 90-97                                                  | XCHG accumulator
+B062 | 00??01010??? | 00000111001 | 039   | --  | 50-57                                                  | PUSH register
+B063 | 00??01011??? | 00001000001 | 041   | --  | 58-5F                                                  | POP register
+B064 | 00??0100???? | 00010011011 | 09B   | --  | 40-4F                                                  | INC/DEC register
+B065 | 00??1011???? | 00000100101 | 025   | --  | B0-BF                                                  | MOV immediate register
+B066 | 00??0111???? | 00111110110 | 1F6   | --  | 70-7F                                                  | Jcc rel8 - conditional jump (JO/JNO/JB/JAE/JE/JNE/JBE/JA/JS/JNS/JP/JNP/JL/JGE/JLE/JG)
+B067 | 111?10000000 | 01110110000 | 3B0   | --  | 0F 00 /0                                               | SLDT [protected mode]; combined u:3B0, u:3B2
+B068 | 1?0?01???111 | 01001010101 | 255   | --  | 63; 0F 00, 0F 02-03                                    | Invalid opcode: ARPL/SLDT/STR/LLDT/LTR/VERR/VERW/reserved/LAR/LSL [real mode]
+B069 | 01??00000111 | 01001010101 | 255   | --  | 0F 07                                                  | undefined/reserved on 80286
+B070 | 111?10001000 | 01110110101 | 3B5   | --  | 0F 00 /1                                               | STR [protected mode]; combined u:3B5, u:3B7
+B071 | 1?0?11???111 | 01001011010 | 25A   | --  | selector 3F; 0F=?                                      | UNRESOLVED feedback selector 3F (no known opcode assignment)
+B072 | 01??00000100 | 10000010011 | 413   | --  | 0F 04                                                  | undocumented 0F04
+B073 | 110?101?1000 | 01001010101 | 255   | --  | 0F 01 /5,/7                                            | Invalid opcode: reserved
+B074 | 110010100000 | 10000001001 | 409   | --  | 0F 01 /4                                               | SMSW [register]
+B075 | 110010110000 | 10000000010 | 402   | --  | 0F 01 /6                                               | LMSW [register]
+B076 | 1100100??000 | 01001010101 | 255   | --  | 0F 01 /0-3                                             | Invalid opcode: SGDT/SIDT/LGDT/LIDT [register]
+B077 | 110010???001 | 01111010011 | 3D3   | --  | 0F 03                                                  | LSL [register] [protected mode]
+B078 | 11111000?000 | 01110110010 | 3B2   | --  | 0F 00 /0-1                                             | SLDT/STR [memory] [protected mode]; combined u:3B2, u:3B7
+B079 | 111?10100000 | 01110111010 | 3BA   | --  | 0F 00 /4                                               | VERR [protected mode]; combined u:3BA, u:3BE
+B080 | 110110110000 | 01111111100 | 3FC   | --  | 0F 01 /6                                               | LMSW [memory]
+B081 | 111?10101000 | 01111000001 | 3C1   | --  | 0F 00 /5                                               | VERW [protected mode]; combined u:3C1, u:3C5
+B082 | 01??00000110 | 10000001011 | 40B   | --  | 0F 06                                                  | CLTS
+B083 | 01?100000000 | 00000100000 | --    | 020 | 0F 00                                                  | system group 0F00 [protected mode]
+B084 | 110110???001 | 01111001111 | 3CF   | --  | 0F 03                                                  | LSL [memory] [protected mode]
+B085 | 111?1011?000 | 01001010101 | 255   | --  | 0F 00 /6-7                                             | Invalid opcode: reserved [protected mode]
+B086 | 110110001000 | 01110000100 | 384   | --  | 0F 01 /1                                               | SIDT [memory]
+B087 | 01??00100??? | 01001010101 | 255   | --  | 0F 20-27                                               | undefined/reserved on 80286
+B088 | 110110011000 | 01101110101 | 375   | --  | 0F 01 /3                                               | LIDT [memory]
+B089 | 110110010000 | 01101110111 | 377   | --  | 0F 01 /2                                               | LGDT [memory]
+B090 | 110110100000 | 10000000110 | 406   | --  | 0F 01 /4                                               | SMSW [memory]
+B091 | 110110000000 | 01110000110 | 386   | --  | 0F 01 /0                                               | SGDT [memory]
+B092 | 01?000000000 | 00000011111 | --    | 01F | 0F 00                                                  | system group 0F00 [real mode]
+B093 | 01?00000001? | 00000011111 | --    | 01F | 0F 02-03                                               | LAR; LSL [real mode]
+B094 | 01?100000011 | 00000000001 | --    | 001 | 0F 03                                                  | LSL [protected mode]; combined s:023
+B095 | 01?10000001? | 00000100010 | --    | 022 | 0F 02-03                                               | LAR; LSL [protected mode]; combined s:022, s:023
+B096 | 111110???001 | 01111001000 | 3C8   | --  | 0F 02                                                  | LAR [memory] [protected mode]
+B097 | 111010???001 | 01111001100 | 3CC   | --  | 0F 02                                                  | LAR [register] [protected mode]
+B098 | 01??00000101 | 10000001000 | 408   | --  | 0F 05                                                  | LOADALL (undocumented); combined u:429
+B099 | 01??00000?01 | 00000100001 | 021   | 021 | 0F 01, 0F 05                                           | system group 0F01; LOADALL (undocumented); combined s:021, u:429
+B100 | 111?10011000 | 01110100010 | 3A2   | --  | 0F 00 /3                                               | LTR [protected mode]; combined u:3A2, u:3AA
+B101 | 11101001?000 | 00000001000 | 008   | --  | 0F 00 /2-3                                             | LLDT/LTR [register] [protected mode]; combined u:39A, u:3AA
+B102 | 01??00?01??? | 01001010101 | 255   | --  | 0F 08-0F, 0F 28-2F                                     | undefined/reserved on 80286
+B103 | 01??00?1???? | 01001010101 | 255   | --  | 0F 10-1F, 0F 30-3F                                     | undefined/reserved on 80286
+B104 | 01??10?????? | 01001010101 | 255   | --  | 0F 80-BF                                               | undefined/reserved on 80286
+B105 | 01???1?????? | 01001010101 | 255   | --  | 0F 40-7F, 0F C0-FF                                     | undefined/reserved on 80286
+B106 | 111?10010000 | 01110010010 | 392   | --  | 0F 00 /2                                               | LLDT [protected mode]; combined u:392, u:39A
+B107 | 11101010?000 | 00000000100 | 004   | --  | 0F 00 /4-5                                             | VERR/VERW [register] [protected mode]; combined u:3BE, u:3C5
+B108 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B109 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B110 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B111 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B112 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B113 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B114 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B115 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B116 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B117 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B118 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B119 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B120 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B121 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B122 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B123 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B124 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B125 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B126 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B127 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B128 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B129 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B130 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED
+B131 | ???????????? | 00000000000 | --    | --  | --                                                     | UNUSED

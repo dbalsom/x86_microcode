@@ -65,11 +65,14 @@ The match logic of the larger state machine AND array above PLA02 (to the left).
 
 ## NMOS Constant ROM
 
-### nmos/CONSTANT_ROM_raw.txt
+### nmos/constant_ROM_raw.txt
+### cmos/constant_ROM_raw.txt
 
-The raw extracted bits from the 80286's constant ROM.
+The raw extracted bits from the constant ROM for the N80286 and 80C286, respectively.
+They do differ by two entries, with the 80C286 adding FFFF.
 
-### nmos/CONSTANT_ROM_decoded.txt
+### nmos/constant_ROM_decoded.txt
+### cmos/constant_ROM_decoded.txt
 
 The decoded values from the constant ROM in unverified index-order.
 
@@ -113,3 +116,19 @@ These are yet to be determined from microcode dissembly, but some plausible gues
 | FFF0     | Reset IP/MSW value; low-nibble-clear mask               | No                               |
 | FFFC     | −4; clear selector RPL bits                             | 16-bit equivalent of FFFFFFFC    |
 | FFFE     | −2; word decrement; clear bit 0                         | 16-bit equivalent of FFFFFFFE    |
+| FFFF     | -1; byte decrement (only present on 80C286)             |                                  |
+
+## 80C286 Microcode ROM
+
+<img src="cmos/images/Harris_80C286_microcode.png" alt="Intel/Harris 80C286 microcode ROM"/>
+
+### cmos/microcode_ROM_raw.txt
+
+The raw bit extraction of the 80C286 microcode ROM.
+
+### cmos/microode_ROM_words.txt
+
+A proposed 35-bit word extraction of the 80C286 microcode ROM with entrypoints listed.
+Note: this is provisional and not yet proven.
+
+

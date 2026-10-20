@@ -128,7 +128,9 @@ The raw bit extraction of the 80C286 microcode ROM.
 
 ### cmos/microode_ROM_words.txt
 
-A proposed 35-bit word extraction of the 80C286 microcode ROM with entrypoints listed.
-Note: this is provisional and not yet proven.
+The 35-bit word extraction of the 80C286 microcode ROM with entrypoints listed.
 
+### scripts/extract_words.py
+
+A simple python script to perform the 35-bit word extraction as above, with no annotations.
 

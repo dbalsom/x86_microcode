@@ -134,3 +134,59 @@ The 35-bit word extraction of the 80C286 microcode ROM with entrypoints listed.
 
 A simple python script to perform the 35-bit word extraction as above, with no annotations.
 
+## Microcode Reference
+
+### Source and Destination fields
+
+These are provisional. Disassembly is actively ongoing; these values may change as more information is uncovered.
+
+00–1A are essentially confirmed via `LOADALL`/`STOREALL`.
+
+| Index | Source      | Destination |
+| ----- | ----------- | ----------- |
+| 00    | AX          | AX          |
+| 01    | CX          | CX          |
+| 02    | DX          | DX          |
+| 03    | BX          | BX          |
+| 04    | SP          | SP          |
+| 05    | BP          | BP          |
+| 06    | SI          | SI          |
+| 07    | DI          | DI          |
+| 08    | ES          | ES          |
+| 09    | CS          | CS          |
+| 0A    | SS          | SS          |
+| 0B    | DS          | DS          |
+| 0C    | LDTR        | LDTR        |
+| 0D    | IP          | IP          |
+| 0E    | FLAGS       | FLAGS       |
+| 0F    | TR          | TR          |
+| 10    | X9          | X9          |
+| 11    | X8          | X8          |
+| 12    | X7          | X7          |
+| 13    | X6          | X6          |
+| 14    | X5          | X5          |
+| 15    | X4          | X4          |
+| 16    | X3          | X3          |
+| 17    | MSW         | MSW         |
+| 18    | X2          | X2          |
+| 19    | X1          | X1          |
+| 1A    | X0          | X0          |
+| 1C    | {1C}        | TMP1C       |
+| 1D    | ZERO        | {1D}        |
+| 1F    | ONES        | NONE        |
+| 20    | AL          | AL          |
+| 24    | AH          | AH          |
+| 2A    | SIGMA       | {2A}        |
+| 2B    | SIGN_RESULT | {2B}        |
+| 2C    | INST_DATA   | {2C}        |
+| 2D    | COUNT_TMP   | COUNT_TMP   |
+| 2E    | IP_NEXT     | FLAGS_LOW   |
+| 2F    | {2F}        | OPR_W       |
+| 30    | OPR_R       | {30}        |
+| 35    | BIU_DATA    | {35}        |
+| 3A    | EA_SEG?     | {3A}        |
+| 3B    | EA_INPUT    | {3B}        |
+| 3C    | INDEXED_REG | INDEXED_REG |
+| 3D    | SEG_OP      | COUNT_LOAD  |
+| 3E    | REG_OP0     | REG_OP1     |
+| 3F    | REG_OP1     | REG_OP0     |

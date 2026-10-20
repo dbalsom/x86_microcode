@@ -24,8 +24,8 @@ New delayering and imaging was comissioned from [InfoSecDJ](https://siliconpr0n.
 
 | Field                        | Bits |
 | ---------------------------- | ---: |
-| Source selector              |    6 |
 | Destination selector         |    6 |
+| Source selector              |    6 |
 | ALU source / branch offset   |    6 |
 | ALU operation / branch cond. |    7 |
 | Opcode                       |    3 |

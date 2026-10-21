@@ -144,14 +144,14 @@ WARNING: Not final disassembly. Many things almost certainly incorrect.
 
 | Value | Name                      |
 | ----- | ------------------------- |
-| `00`  | `AX`<br>`{00}`            |
-| `01`  | `{01}`                    |
-| `02`  | `{02}`                    |
-| `03`  | `{03}`                    |
-| `04`  | `SP`<br>`{04}`            |
-| `05`  | `{05}`                    |
-| `06`  | `{06}`                    |
-| `07`  | `{07}`                    |
+| `00`  | `AX`<br>`ES`<br>`{00}`    |
+| `01`  | `CS`<br>`{01}`            |
+| `02`  | `SS`<br>`{02}`            |
+| `03`  | `BX`<br>`DS`<br>`{03}`    |
+| `04`  | `GDTR`<br>`SP`<br>`{04}`  |
+| `05`  | `LDTR`<br>`{05}`          |
+| `06`  | `IDTR`<br>`{06}`          |
+| `07`  | `TR`<br>`{07}`            |
 | `08`  | `{08}`                    |
 | `09`  | `IMM`<br>`{09}`           |
 | `0A`  | `X9`<br>`{0A}`            |
@@ -197,17 +197,155 @@ WARNING: Not final disassembly. Many things almost certainly incorrect.
 | `32`  | `{32}`                    |
 | `33`  | `001A`<br>`{33}`          |
 | `34`  | `002A`                    |
-| `35`  | `00FF`<br>`{35}`          |
+| `35`  | `00FF`                    |
 | `36`  | `0018`                    |
 | `37`  | `FFFE`<br>`{37}`          |
 | `38`  | `0800`<br>`{38}`          |
 | `39`  | `{39}`                    |
 | `3A`  | `{3A}`                    |
 | `3B`  | `FDFF`<br>`{3B}`          |
-| `3C`  | `FFF0`<br>`{3C}`          |
+| `3C`  | `FFF0`                    |
 | `3D`  | `{3D}`                    |
 | `3E`  | `{3E}`                    |
 | `3F`  | `{3F}`                    |
+
+## Select Bank (6 bits)
+
+| Value | Name   |
+| ----- | ------ |
+| `00`  | `ES`   |
+| `01`  | `CS`   |
+| `02`  | `SS`   |
+| `03`  | `DS`   |
+| `04`  | `GDTR` |
+| `05`  | `LDTR` |
+| `06`  | `IDTR` |
+| `07`  | `TR`   |
+| `08`  | `{08}` |
+| `09`  | `{09}` |
+| `0A`  | `{0A}` |
+| `0B`  | `{0B}` |
+| `0C`  | `{0C}` |
+| `0D`  | `{0D}` |
+| `0E`  | `{0E}` |
+| `0F`  | `{0F}` |
+| `10`  | `{10}` |
+| `11`  | `{11}` |
+| `12`  | `{12}` |
+| `13`  | `{13}` |
+| `14`  | `{14}` |
+| `15`  | `{15}` |
+| `16`  | `{16}` |
+| `17`  | `{17}` |
+| `18`  | `{18}` |
+| `19`  | `{19}` |
+| `1A`  | `{1A}` |
+| `1B`  | `{1B}` |
+| `1C`  | `{1C}` |
+| `1D`  | `{1D}` |
+| `1E`  | `{1E}` |
+| `1F`  | `{1F}` |
+| `20`  | `{20}` |
+| `21`  | `{21}` |
+| `22`  | `{22}` |
+| `23`  | `{23}` |
+| `24`  | `{24}` |
+| `25`  | `{25}` |
+| `26`  | `{26}` |
+| `27`  | `{27}` |
+| `28`  | `{28}` |
+| `29`  | `{29}` |
+| `2A`  | `{2A}` |
+| `2B`  | `{2B}` |
+| `2C`  | `{2C}` |
+| `2D`  | `{2D}` |
+| `2E`  | `{2E}` |
+| `2F`  | `{2F}` |
+| `30`  | `{30}` |
+| `31`  | `{31}` |
+| `32`  | `{32}` |
+| `33`  | `{33}` |
+| `34`  | `{34}` |
+| `35`  | `{35}` |
+| `36`  | `{36}` |
+| `37`  | `{37}` |
+| `38`  | `{38}` |
+| `39`  | `{39}` |
+| `3A`  | `{3A}` |
+| `3B`  | `{3B}` |
+| `3C`  | `{3C}` |
+| `3D`  | `{3D}` |
+| `3E`  | `{3E}` |
+| `3F`  | `{3F}` |
+
+## Secondary Destination (6 bits)
+
+| Value | Name             |
+| ----- | ---------------- |
+| `00`  | `{00}`           |
+| `01`  | `{01}`           |
+| `02`  | `{02}`           |
+| `03`  | `{03}`           |
+| `04`  | `{04}`           |
+| `05`  | `{05}`           |
+| `06`  | `{06}`           |
+| `07`  | `{07}`           |
+| `08`  | `{08}`           |
+| `09`  | `{09}`           |
+| `0A`  | `{0A}`           |
+| `0B`  | `{0B}`           |
+| `0C`  | `{0C}`           |
+| `0D`  | `{0D}`           |
+| `0E`  | `{0E}`           |
+| `0F`  | `{0F}`           |
+| `10`  | `SELECTED.LOWER` |
+| `11`  | `SELECTED.UPPER` |
+| `12`  | `SELECTED.LIMIT` |
+| `13`  | `{13}`           |
+| `14`  | `{14}`           |
+| `15`  | `{15}`           |
+| `16`  | `{16}`           |
+| `17`  | `{17}`           |
+| `18`  | `SEGMENT`        |
+| `19`  | `{19}`           |
+| `1A`  | `{1A}`           |
+| `1B`  | `{1B}`           |
+| `1C`  | `{1C}`           |
+| `1D`  | `{1D}`           |
+| `1E`  | `{1E}`           |
+| `1F`  | `{1F}`           |
+| `20`  | `ES.LOWER`       |
+| `21`  | `ES.UPPER`       |
+| `22`  | `ES.LIMIT`       |
+| `23`  | `{23}`           |
+| `24`  | `CS.LOWER`       |
+| `25`  | `CS.UPPER`       |
+| `26`  | `CS.LIMIT`       |
+| `27`  | `{27}`           |
+| `28`  | `SS.LOWER`       |
+| `29`  | `SS.UPPER`       |
+| `2A`  | `SS.LIMIT`       |
+| `2B`  | `{2B}`           |
+| `2C`  | `DS.LOWER`       |
+| `2D`  | `DS.UPPER`       |
+| `2E`  | `DS.LIMIT`       |
+| `2F`  | `{2F}`           |
+| `30`  | `{30}`           |
+| `31`  | `{31}`           |
+| `32`  | `{32}`           |
+| `33`  | `INDEXED_CACHE`  |
+| `34`  | `{34}`           |
+| `35`  | `{35}`           |
+| `36`  | `{36}`           |
+| `37`  | `{37}`           |
+| `38`  | `IDTR.LOWER`     |
+| `39`  | `IDTR.UPPER`     |
+| `3A`  | `IDTR.LIMIT`     |
+| `3B`  | `{3B}`           |
+| `3C`  | `{3C}`           |
+| `3D`  | `{3D}`           |
+| `3E`  | `{3E}`           |
+| `3F`  | `{3F}`           |
 
 ## Control (5 bits)
 
@@ -221,7 +359,7 @@ WARNING: Not final disassembly. Many things almost certainly incorrect.
 | `05`  | `{05}`                           |
 | `06`  | `{06}`                           |
 | `07`  | `{07}`                           |
-| `08`  | `{08}`                           |
+| `08`  | `SELECT`                         |
 | `09`  | `{09}`                           |
 | `0A`  | `{0A}`                           |
 | `0B`  | `{0B}`                           |
@@ -246,7 +384,7 @@ WARNING: Not final disassembly. Many things almost certainly incorrect.
 | `1E`  | `{1E}`                           |
 | `1F`  | `RNI`                            |
 
-## Mode (2 bits)
+## Type (2 bits)
 
 | Value | Name       |
 | ----- | ---------- |
@@ -255,7 +393,7 @@ WARNING: Not final disassembly. Many things almost certainly incorrect.
 | `02`  | `BRANCH`   |
 | `03`  | `TEST?`    |
 
-## Function — ALU (Mode 00) (3 bits)
+## Function — ALU (Type 00) (3 bits)
 
 | Value | SUB 00         | SUB 01        | SUB 02          | SUB 03            |
 | ----- | -------------- | ------------- | --------------- | ----------------- |
@@ -268,7 +406,7 @@ WARNING: Not final disassembly. Many things almost certainly incorrect.
 | `06`  | `{06}`         | `{06}`        | `{06}`          | `{06}`            |
 | `07`  | `{07}`         | `{07}`        | `{07}`          | `{07}`            |
 
-## Function — TRANSFER (Mode 01) (3 bits)
+## Function — TRANSFER (Type 01) (3 bits)
 
 | Value | SUB 00 | SUB 01 | SUB 02 | SUB 03 |
 | ----- | ------ | ------ | ------ | ------ |
@@ -281,20 +419,20 @@ WARNING: Not final disassembly. Many things almost certainly incorrect.
 | `06`  | `{06}` | `{06}` | `{06}` | `{06}` |
 | `07`  | `--`   | `--`   | `--`   | `--`   |
 
-## Function — BRANCH (Mode 02) (3 bits)
+## Function — BRANCH (Type 02) (3 bits)
 
-| Value | SUB 00                    | SUB 01                                            | SUB 02             | SUB 03                |
-| ----- | ------------------------- | ------------------------------------------------- | ------------------ | --------------------- |
-| `00`  | `J_RESULT_NONZERO`        | `J_NOT_OPCODE_CONDITION`                          | `J_RESULT_ZERO`    | `Jcc?`                |
-| `01`  | `J_COUNT_ZERO`            | `J_COUNT_NONZERO`                                 | `Jcc?`             | `J_REP_MORE?`         |
-| `02`  | `J_ENTER_LEVEL_ONE`       | `J_ENTER_MORE_ANCESTORS`<br>`J_LOADALL_MORE_REGS` | `J_POPA_MORE_REGS` | `J_REP_COMPARE_MORE?` |
-| `03`  | `Jcc?`                    | `J_TASK_NON_NESTING`                              | `J_NPX_READY`      | `{03}`                |
-| `04`  | `J_SIGNED_LESS`<br>`Jcc?` | `J_SIGNED_GREATER`<br>`Jcc?`                      | `Jcc?`             | `Jcc?`                |
-| `05`  | `Jcc?`                    | `Jcc?`                                            | `Jcc?`             | `Jcc?`                |
-| `06`  | `LJMP_PRIV_FAIL`          | `LJMP_PE`                                         | `JMP`              | `J_NESTED_TASK`       |
-| `07`  | `J_NOT_OVERFLOW`          | `J_CARRY`                                         | `J_NPX_ERROR`      | `Jcc?`                |
+| Value | SUB 00                    | SUB 01                                            | SUB 02             | SUB 03                  |
+| ----- | ------------------------- | ------------------------------------------------- | ------------------ | ----------------------- |
+| `00`  | `J_RESULT_NONZERO`        | `J_NOT_OPCODE_CONDITION`                          | `J_RESULT_ZERO`    | `J_LOOP_DONE`<br>`Jcc?` |
+| `01`  | `J_COUNT_ZERO`            | `J_COUNT_NONZERO`                                 | `Jcc?`             | `J_REP_MORE?`           |
+| `02`  | `J_ENTER_LEVEL_ONE`       | `J_ENTER_MORE_ANCESTORS`<br>`J_LOADALL_MORE_REGS` | `J_POPA_MORE_REGS` | `J_REP_COMPARE_MORE?`   |
+| `03`  | `Jcc?`                    | `J_TASK_NON_NESTING`                              | `J_NPX_READY`      | `{03}`                  |
+| `04`  | `J_SIGNED_LESS`<br>`Jcc?` | `J_SIGNED_GREATER`<br>`Jcc?`                      | `Jcc?`             | `Jcc?`                  |
+| `05`  | `Jcc?`                    | `Jcc?`                                            | `Jcc?`             | `Jcc?`                  |
+| `06`  | `LJMP_PRIV_FAIL`          | `LJMP_PE`                                         | `JMP`              | `J_NESTED_TASK`         |
+| `07`  | `J_NOT_OVERFLOW`          | `J_CARRY`                                         | `J_NPX_ERROR`      | `Jcc?`                  |
 
-## Function — TEST? (Mode 03) (3 bits)
+## Function — TEST? (Type 03) (3 bits)
 
 | Value | SUB 00 | SUB 01 | SUB 02 | SUB 03                                                                       |
 | ----- | ------ | ------ | ------ | ---------------------------------------------------------------------------- |
@@ -318,38 +456,38 @@ WARNING: Not final disassembly. Many things almost certainly incorrect.
 
 ## Bus Control (5 bits)
 
-| Value | Name            |
-| ----- | --------------- |
-| `00`  | `--`<br>`{00}`  |
-| `01`  | `{01}`          |
-| `02`  | `{02}`          |
-| `03`  | `ALU_ITERATE`   |
-| `04`  | `{04}`          |
-| `05`  | `{05}`          |
-| `06`  | `{06}`          |
-| `07`  | `{07}`          |
-| `08`  | `{08}`          |
-| `09`  | `{09}`          |
-| `0A`  | `{0A}`          |
-| `0B`  | `{0B}`          |
-| `0C`  | `{0C}`          |
-| `0D`  | `{0D}`          |
-| `0E`  | `{0E}`          |
-| `0F`  | `{0F}`          |
-| `10`  | `INTA`          |
-| `11`  | `IO_READ`       |
-| `12`  | `IO_WRITE`      |
-| `13`  | `{13}`          |
-| `14`  | `HALT_SHUTDOWN` |
-| `15`  | `MEM_READ`      |
-| `16`  | `MEM_WRITE`     |
-| `17`  | `DESC_READ`     |
-| `18`  | `{18}`          |
-| `19`  | `{19}`          |
-| `1A`  | `IO_WRITE`      |
-| `1B`  | `{1B}`          |
-| `1C`  | `{1C}`          |
-| `1D`  | `MEM_READ`      |
-| `1E`  | `MEM_WRITE`     |
-| `1F`  | `{1F}`          |
+| Value | Name                |
+| ----- | ------------------- |
+| `00`  | `--`<br>`{00}`      |
+| `01`  | `{01}`              |
+| `02`  | `{02}`              |
+| `03`  | `ALU_ITERATE`       |
+| `04`  | `{04}`              |
+| `05`  | `{05}`              |
+| `06`  | `{06}`              |
+| `07`  | `{07}`              |
+| `08`  | `{08}`              |
+| `09`  | `{09}`              |
+| `0A`  | `{0A}`              |
+| `0B`  | `{0B}`              |
+| `0C`  | `{0C}`              |
+| `0D`  | `{0D}`              |
+| `0E`  | `LOCK?`<br>`{0E}`   |
+| `0F`  | `UNLOCK?`<br>`{0F}` |
+| `10`  | `INTA`              |
+| `11`  | `IO_READ`           |
+| `12`  | `IO_WRITE`          |
+| `13`  | `{13}`              |
+| `14`  | `HALT_SHUTDOWN`     |
+| `15`  | `MEM_READ`          |
+| `16`  | `MEM_WRITE`         |
+| `17`  | `DESC_READ`         |
+| `18`  | `{18}`              |
+| `19`  | `{19}`              |
+| `1A`  | `IO_WRITE`          |
+| `1B`  | `{1B}`              |
+| `1C`  | `{1C}`              |
+| `1D`  | `MEM_READ`          |
+| `1E`  | `MEM_WRITE`         |
+| `1F`  | `{1F}`              |
 

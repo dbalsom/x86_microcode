@@ -22,17 +22,19 @@ New delayering and imaging was comissioned from [InfoSecDJ](https://siliconpr0n.
 
 ## 80286 Word Format
 
-| Field                        | Bits |
-| ---------------------------- | ---: |
-| Destination selector         |    6 |
-| Source selector              |    6 |
-| Argument                     |    6 |
-| Control                      |    5 |
-| Mode                         |    2 |
-| Opcode                       |    3 |
-| Subcode                      |    2 |
-| Bus control                  |    5 |
-| Total                        |   35 |
+Provisional; subject to change at any time.
+
+| Field                | Bits |
+| -------------------- | ---: |
+| Destination selector |    6 |
+| Source selector      |    6 |
+| Argument             |    6 |
+| Control              |    5 |
+| Type                 |    2 |
+| Opcode               |    3 |
+| Subcode              |    2 |
+| Bus control          |    5 |
+| Total                |   35 |
 
 ## NMOS PLA Analysis
 
@@ -191,3 +193,38 @@ These are provisional. Disassembly is actively ongoing; these values may change 
 | 3D    | SEG_OP      | COUNT_LOAD  |
 | 3E    | REG_OP0     | REG_OP1     |
 | 3F    | REG_OP1     | REG_OP0     |
+
+
+### STOREALL from power-on of a Harris 80c286
+
+Observed evidence of post-RESET register state.
+
+| Register | STOREALL address | Captured value |
+| -------- | ---------------- | -------------- |
+| AX       | `0834`           | `FFFF`         |
+| BX       | `082E`           | `FFDF`         |
+| CX       | `0832`           | `FD3F`         |
+| DX       | `0830`           | `D23A`         |
+| SP       | `082C`           | `FDFA`         |
+| BP       | `082A`           | `FBFF`         |
+| SI       | `0828`           | `DA9C`         |
+| DI       | `0826`           | `FFFF`         |
+| IP       | `081A`           | `FFF3`         |
+| FLAGS    | `0818`           | `0002`         |
+| MSW      | `0806`           | `FFF0`         |
+| ES       | `0824`           | `0000`         |
+| CS       | `0822`           | `F000`         |
+| SS       | `0820`           | `0000`         |
+| DS       | `081E`           | `0000`         |
+| LDTR     | `081C`           | `0000`         |
+| TR       | `0816`           | `0000`         |
+| X0       | `0800`           | `A481`         |
+| X1       | `0802`           | `FFFF`         |
+| X2       | `0804`           | `002A`         |
+| X3       | `0808`           | `DF05`         |
+| X4       | `080A`           | `7AFF`         |
+| X5       | `080C`           | `EFFD`         |
+| X6       | `080E`           | `9F77`         |
+| X7       | `0810`           | `FCFF`         |
+| X8       | `0812`           | `CDBF`         |
+| X9       | `0814`           | `DFBB`         |

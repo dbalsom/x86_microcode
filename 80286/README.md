@@ -31,32 +31,31 @@ Provisional; subject to change at any time.
 | Argument             |    6 |
 | Control              |    5 |
 | Type                 |    2 |
-| Opcode               |    3 |
-| Subcode              |    2 |
+| Function             |    5 |
 | Bus control          |    5 |
 | Total                |   35 |
 
 ## NMOS PLA Analysis
 
-### PLA01 - Microcode Match Decoder
+### PLA01 - Microcode Entrypoint PLA
 
-#### nmos/PLA01_MatchDecoder.txt
+#### nmos/PLA01_entrypoint_pla_decoded.txt
 
-The decoded two-stage match decoder logic of the NMOS Intel 80286
+The decoded two-stage microcode entrypoint PLA logic.
 
 ### nmos/PLA01_raw.txt
 
-The raw extracted bits from the match decoder PLA.
+The raw extracted bits from the microcode entrypoint PLA.
 
-### PLA02 - Decode Control PLA
+### PLA02 - Instruction Unit Control PLA
 
 #### nmos/PLA02_logic.txt
 
-The match logic of the decode control PLA.
+The match logic of the IU control PLA.
 
 #### nmos/PLA02_raw.txt
 
-The raw extracted bits from the decode control PLA.
+The raw extracted bits from the IU control PLA.
 
 #### nmos/PLA02_SM_01_logic.txt
 
@@ -66,7 +65,7 @@ The match logic of the smaller state machine AND array above PLA02 (to the right
 
 The match logic of the larger state machine AND array above PLA02 (to the left).
 
-## NMOS Constant ROM
+## Constant ROM
 
 ### nmos/constant_ROM_raw.txt
 ### cmos/constant_ROM_raw.txt
@@ -85,6 +84,8 @@ Like the 386 constant ROM's lower 16-bits, the 16-bit outputs of the 286 constan
 but in a different pattern:
 
 F,7,E,6,D,5,C,4,B,3,A,2,9,1,8,0
+
+Note that this matches the package order of the data pins on the PLCC68 80c286. 
 
 ### Possible constant ROM uses
 

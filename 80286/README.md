@@ -100,42 +100,7 @@ Note that this matches the package order of the data pins on the PLCC68 80c286.
 
 ### [cmos/constant_ROM_uses.md](cmos/constant_ROM_uses.md)
 
-
-
-
-
-These are yet to be determined from microcode dissembly, but some plausible guesses:
-
-| Constant | Possible use                                            | Present in 386 constant ROM      |
-| -------- | ------------------------------------------------------- | -------------------------------- |
-| 0000     | Zero/clear value/unused ROM entry                       | No                               |
-| 0001     | Increment, shift count, bit-0 mask                      | Yes                              |
-| 0002     | Word stride or decrement magnitude                      | Yes                              |
-| 0004     | Descriptor offset or segment-address shift count        | Yes                              |
-| 0005     | BOUND exception vector 5; small count                   | No                               |
-| 0006     | Invalid-opcode vector 6; small count                    | Yes                              |
-| 0007     | Coprocessor-unavailable vector 7; three-bit mask        | Yes                              |
-| 0008     | Task-switched bit; double-fault vector; byte shift      | Yes                              |
-| 000A     | Invalid-TSS vector 10; TSS SP2 offset                   | No                               |
-| 000C     | Stack-fault vector 12; TSS SS2 offset                   | No                               |
-| 000E     | TSS saved-IP offset                                     | No                               |
-| 000F     | Low-nibble/MSW mask                                     | Yes                              |
-| 0016     | TSS size in words (22), DX offset, or LOADALL TR offset | No                               |
-| 0017     | Unknown;                                                | No                               |
-| 0018     | TSS BX offset or LOADALL FLAGS offset                   | No                               |
-| 001A     | TSS SP offset or LOADALL IP offset                      | No                               |
-| 0028     | TSS DS offset or LOADALL SI offset                      | No                               |
-| 002A     | TSS LDT offset or LOADALL BP offset                     | No                               |
-| 00F8     | 286/287 command/status port                             | Same role: 800000F8              |
-| 00FF     | Low-byte mask                                           | No                               |
-| 0800     | LOADALL physical base; also OF mask                     | No                               |
-| F000     | Reset CS value                                          | No; derived from 000F0000 on 386 |
-| FDFF     | Clear descriptor TSS-busy bit                           | 16-bit equivalent of FFFFFDFF    |
-| FF00     | High-byte mask                                          | No                               |
-| FFF0     | Reset IP/MSW value; low-nibble-clear mask               | No                               |
-| FFFC     | −4; clear selector RPL bits                             | 16-bit equivalent of FFFFFFFC    |
-| FFFE     | −2; word decrement; clear bit 0                         | 16-bit equivalent of FFFFFFFE    |
-| FFFF     | -1; byte decrement (only present on 80C286)             |                                  |
+An explanation of how each constant is used in the microcode.
 
 ## 80C286 Microcode ROM
 

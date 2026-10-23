@@ -18,22 +18,33 @@ Unfortunately the resolution was not sufficient for reliable bit extraction.
 
 ## New Imaging (2026)
 
-New delayering and imaging was comissioned from [InfoSecDJ](https://siliconpr0n.org/archive/doku.php?id=infosecdj:start) on a Harris 80C286 CPU. 
+New delayering and imaging was commissioned from [InfoSecDJ](https://siliconpr0n.org/archive/doku.php?id=infosecdj:start) on a Harris 80C286 CPU. 
+
+The subsequent die photography is available [here](https://infosecdj.net/map/harris/cs80c286/infosecdj_nikpa40x/), as three layers (Metal 1, Metal 2, and Polysilicon). ROM and PLA bits are extracted from the polysilicon layer.
+
+## 80286 Block Diagram
+
+<img src="references/US4442484-Figure-3.png" alt="Intel 80286 functional block diagram" width="75%" />
+
+*From US Patent [US4442484](references/US4442484.pdf)*
+
+The 286 has two separate data busses - the M-bus (Main bus?) and R-bus. 
+
+The general register file is dual-ported, and can provide two separate 16-bit words (one on each bus) on the same clock as operands to the ALU.
 
 ## 80286 Word Format
 
 Provisional; subject to change at any time.
 
-| Field                | Bits |
-| -------------------- | ---: |
-| Destination selector |    6 |
-| Source selector      |    6 |
-| Argument             |    6 |
-| Control              |    5 |
-| Type                 |    2 |
-| Function             |    5 |
-| Bus control          |    5 |
-| Total                |   35 |
+| Field                           | Bits |
+| ------------------------------- | ---: |
+| MD - M-Bus Destination Selector |    6 |
+| MS - M-Bus Source selector      |    6 |
+| RS - R-Bus Selector             |    6 |
+| Control                         |    5 |
+| ALU/Jump Function               |    7 |
+| Bus control                     |    5 |
+| Total                           |   35 |
 
 ## NMOS PLA Analysis
 
@@ -67,14 +78,14 @@ The match logic of the larger state machine AND array above PLA02 (to the left).
 
 ## Constant ROM
 
-### nmos/constant_ROM_raw.txt
-### cmos/constant_ROM_raw.txt
+### [nmos/constant_ROM_raw.txt](nmos/constant_ROM_raw.txt)
+### [cmos/constant_ROM_raw.txt](cmos/constant_ROM_raw.txt)
 
 The raw extracted bits from the constant ROM for the N80286 and 80C286, respectively.
 They do differ by two entries, with the 80C286 adding FFFF.
 
-### nmos/constant_ROM_decoded.txt
-### cmos/constant_ROM_decoded.txt
+### [nmos/constant_ROM_decoded.txt](nmos/constant_ROM_decoded.txt)
+### [cmos/constant_ROM_decoded.txt](cmos/constant_ROM_decoded.txt)
 
 The decoded values from the constant ROM in unverified index-order.
 
@@ -87,7 +98,11 @@ F,7,E,6,D,5,C,4,B,3,A,2,9,1,8,0
 
 Note that this matches the package order of the data pins on the PLCC68 80c286. 
 
-### Possible constant ROM uses
+### [cmos/constant_ROM_uses.md](cmos/constant_ROM_uses.md)
+
+
+
+
 
 These are yet to be determined from microcode dissembly, but some plausible guesses:
 

@@ -1,0 +1,37 @@
+NMOS N80286 CONTROL_ROM_01 Decoding
+
+Rows are numbered 1-based, top to bottom.
+RAW: 1 = transistor present; 0 = absent.
+
+MATCH: CONTROL[0] through CONTROL[4], left to right. ? = don't care.
+CONTROL[0] is the least significant bit of CONTROL HEX.
+
+Raw pairs 1-2 / 5-6 (CONTROL[0]/[2]): 10 -> 0, 01 -> 1, 00 -> don't care.
+Raw pairs 3-4 / 7-8 (CONTROL[1]/[3]): 10 -> 1, 01 -> 0, 00 -> don't care.
+
+CONTROL[1] and CONTROL[3] have reversed horizontal pair order in both versions.
+
+Raw column 9 decodes as 1 -> CONTROL[4]=1, 0 -> don't care.
+
+CONTROL HEX lists all matching 5-bit values in ascending order.
+* = absent from nonempty words in ../cmos/intel286_microcode.txt.
+
+ROW | RAW       | MATCH C0..C4 | CMOS ROW | CONTROL HEX
+----+-----------+--------------+----------+--------------
+01  | 101001101 | 01111        | 06       | 1E*
+02  | 010101001 | 101?1        | 07       | 15 1D
+03  | 010110011 | 10001        | 02       | 11*
+04  | 101010101 | 01011        | 03       | 1A*
+05  | 101001001 | 011?1        | 04       | 16* 1E*
+06  | 101010000 | 010??        | 01       | 02 0A 12* 1A*
+07  | 101001010 | 0110?        | 09       | 06 16*
+08  | 010100001 | 10??1        | 05       | 11* 15 19* 1D
+09  | 011001101 | 11111        | 11       | 1F
+10  | 010101100 | 1011?        | 13       | 0D 1D
+11  | 100101000 | 001??        | 12       | 04 0C* 14* 1C
+12  | 100110101 | 00011        | 08       | 18
+13  | 011010011 | 11001        | 10       | 13
+
+All 13 CONTROL[0..3] terms match to CMOS CONTROL ROM 01 after row reordering.
+Rows 1, 2, 3, 4, 5, 8 differ in their CONTROL[4] condition.
+NMOS requires CONTROL[4]=1; the corresponding CMOS terms ignore that bit.

@@ -1,0 +1,372 @@
+NMOS/CMOS 80286 PLA02 - IU Control PLA
+
+The IU Control PLA sequences instruction decoding. It identifies opcode and
+ModR/M formats, then steps through any displacement or immediate fields.
+
+15 inputs, 11 outputs, 121 terms: 101 used (000-100), 20 unused (101-120).
+Outputs O0..O5 carry decode controls; O6..O10 feed back as the next state.
+
+State codes and byte values are hexadecimal unless shown as binary.
+
+Inputs
+------
+
+Field   | Source input pairs          | Meaning
+--------+-----------------------------+-----------------------------------------------
+E       | I0                          | 0 = normal opcode, 1 = 0F extended opcode
+Q4..Q0  | I1 I3 I5 I7 I9              | Current state, in input order
+D       | I13                         | Direct disp16: mod=00, r/m=110 (proposed)
+B7..B0  | I11 I2 I4 I6 I8 I10 I12 I14 | Byte from the code queue
+
+B holds the opcode or ModR/M byte, depending on the state. 
+D appears to give the expected ModR/M displacement sizes.
+
+State feedback
+--------------
+
+Output | Input | State bit
+-------+-------+----------
+O10    | I1    | Q4
+O9     | I3    | Q3
+O8     | I5    | Q2
+O7     | I7    | Q1
+O6     | I9    | Q0
+
+F names the same state in output-bit order:
+
+    Current F = Q0 Q1 Q2 Q3 Q4
+    Next F    = O6 O7 O8 O9 O10
+
+The five bits above are written most significant first. For example,
+F=16 is binary 10110, so Q4..Q0=01101. F is a state code.
+
+Outputs
+-------
+
+Bit     | Alias | Meaning during opcode decode
+--------+-------+-------------------------------------------------------------
+O0      | DONE  | Opcode/ModR/M decoding complete; trailing data may remain
+O1      | W     | Opcode width-bit class
+O2      | REG   | Opcode contains a general-register number
+O3      | SEG   | Segment-register PUSH/POP
+O4      | ALU   | ALU/register-operation class, including PUSH/POP r16
+O5      | SEQ   | Control-transfer/special-sequencing class (provisional)
+O6..O10 | F     | Next state
+
+DONE does not mean the instruction is fully assembled. For MOV AX,imm16,
+DONE asserts on the opcode, before either immediate byte is processed.
+O0..O5 are zero throughout the literal states.
+
+Opcode and ModR/M states
+------------------------
+F=00 and F=01 decode the same way. Prefix identity and the 0F escape
+must be stored separately; F=01 only keeps opcode decoding active.
+
+F  | Q4..Q0 | BYTE / OPERATION                             | OPCODE EXAMPLES                             
+---+--------+----------------------------------------------+---------------------------------------------
+00 | 00000  | Opcode                                       | Start of an instruction
+01 | 10000  | Opcode after prefix/escape                   | Same decode as F=00
+02 | 01000  | Byte unary group; TEST has imm8              | F6
+03 | 11000  | Word unary group; TEST has imm16             | F7
+10 | 00001  | Ordinary ModR/M, no immediate                | 00-03, 88-8B, D8-DF, etc.
+11 | 10001  | ModR/M plus imm8                             | 80, 82, C0-C1, C6
+12 | 01001  | ModR/M plus sign-extended imm8               | 6B, 83
+13 | 11001  | ModR/M plus imm16                            | 69, 81, C7
+1C | 00111  | Shift/rotate by 1 or CL                      | D0-D3
+1D | 10111  | FE/FF group                                  | FE-FF
+
+In the ModR/M states, mod and D select the displacement size.
+F6/F7 /0-/1 request a TEST immediate; /2-/7 do not.
+FE/FF /2-/5 also set O5. These format rules include invalid encodings.
+The ModR/M descriptions use E=0; state 10 also behaves the same at E=1.
+
+Trailing fields
+---------------
+When DONE=1, the next F describes the fields still to be read.
+The first field is usually a displacement or address. ENTER uses it
+for the frame size; far CALL/JMP use it for the offset.
+
+  O8=0: no trailing fields in the opcode/ModR/M results.
+  O8=1: trailing fields remain:
+    O6=0: first field present; O7=0 for a word, O7=1 for a signed byte.
+    O6=1: first field absent.
+    O9 O10: 00 = no second field, 01 = imm8,
+            10 = imm16, 11 = sign-extended imm8.
+
+NEXT F | FIELDS REMAINING                            
+-------+---------------------------------------------
+00     | none
+04     | first word
+0C     | first signed byte
+15     | imm8
+16     | imm16
+17     | sign-extended imm8
+05     | first word + imm8
+06     | first word + imm16
+07     | first word + sign-extended imm8
+0D     | first signed byte + imm8
+0E     | first signed byte + imm16
+0F     | first signed byte + sign-extended imm8
+
+Literal states
+--------------
+A literal is an instruction field such as a displacement or immediate.
+In these states, only the next F is generated. B, E and D have no effect.
+Every literal sequence returns to 00. State 14 is never generated;
+if entered, it also returns to 00.
+
+F  | NEXT F | CURRENT OPERATION                                               
+---+--------+-----------------------------------------------------------------
+04 | 08     | First word low byte
+05 | 09     | First word low byte; pending imm8
+06 | 0A     | First word low byte; pending imm16
+07 | 0B     | First word low byte; pending signed imm8
+08 | 00     | First word high byte
+09 | 15     | First word high byte; pending imm8
+0A | 16     | First word high byte; pending imm16
+0B | 17     | First word high byte; pending signed imm8
+0C | 18     | First signed byte
+0D | 19     | First signed byte; pending imm8
+0E | 1A     | First signed byte; pending imm16
+0F | 1B     | First signed byte; pending signed imm8
+14 | 00     | Unused; never generated
+15 | 00     | Immediate byte
+16 | 1E     | Immediate word low byte
+17 | 1F     | Signed immediate byte
+18 | 00     | First-literal sign extension
+19 | 15     | First-literal sign extension; pending imm8
+1A | 16     | First-literal sign extension; pending imm16
+1B | 17     | First-literal sign extension; pending signed imm8
+1E | 00     | Immediate word high byte
+1F | 00     | Immediate sign extension
+
+The extra phase after a signed byte appears to generate its high byte
+by sign extension. The Intel patent shows a sign-extension unit.
+
+Hardware experiments show 1 cycle per state tranistion, with sign extension
+taking an extra cycle.
+
+Example sequences
+-----------------
+For MOV AX,imm16: 00 decodes B8, 16 handles the low immediate byte,
+1E handles the high byte, then 00 decodes the next opcode.
+
+INSTRUCTION              | STATE SEQUENCE                          
+-------------------------+-----------------------------------------
+MOV AX,imm16             | 00 -> 16 -> 1E -> 00
+ENTER                    | 00 -> 05 -> 09 -> 15 -> 00
+CALL far immediate       | 00 -> 06 -> 0A -> 16 -> 1E -> 00
+80 /0 with disp8         | 00 -> 11 -> 0D -> 19 -> 15 -> 00
+F7 /0, register          | 00 -> 03 -> 16 -> 1E -> 00
+F7 /6, register          | 00 -> 03 -> 00
+
+Opcode examples
+---------------
+F=00/01, Q=?0000. OUTPUT includes every matching term; E selects
+normal or 0F extended opcodes. D has no effect in these states.
+
+OPCODE | TERMS               | OUTPUT      | SIGNALS                       | NEXT F | INSTRUCTION                                                 
+-------+---------------------+-------------+-------------------------------+--------+-----------------------
+04     | 022                 | 11001010101 | DONE,W,ALU,O6,O8,O10          | 15     | ADD AL,imm8
+05     | 038                 | 11001010110 | DONE,W,ALU,O6,O8,O9           | 16     | ADD AX,imm16
+06     | 073 074             | 10010000000 | DONE,SEG                      | 00     | PUSH ES
+0F     | 040                 | 00000000001 | O10                           | 01     | 0F escape
+26     | 031                 | 00000000001 | O10                           | 01     | ES prefix
+40     | 042                 | 10101000000 | DONE,REG,ALU                  | 00     | INC AX
+69     | 063 064             | 00001010011 | ALU,O6,O9,O10                 | 13     | IMUL r16,r/m16,imm16
+6B     | 025 064             | 00001010010 | ALU,O6,O9                     | 12     | IMUL r16,r/m16,imm8
+70     | 007                 | 10001001100 | DONE,ALU,O7,O8                | 0C     | JO rel8
+80     | 033 044 048 067 100 | 01000010001 | W,O6,O10                      | 11     | ALU group r/m8,imm8
+81     | 039 044 048 067 100 | 01000010011 | W,O6,O9,O10                   | 13     | ALU group r/m16,imm16
+83     | 039 048 067         | 01000010010 | W,O6,O9                       | 12     | ALU group r/m16,imm8
+88     | 048 067             | 01000010000 | W,O6                          | 10     | MOV r/m8,r8
+B0     | 051 054 059 060 070 | 11100010101 | DONE,W,REG,O6,O8,O10          | 15     | MOV AL,imm8
+B8     | 036 051 059 069     | 11100010110 | DONE,W,REG,O6,O8,O9           | 16     | MOV AX,imm16
+C8     | 017 090             | 10000000101 | DONE,O8,O10                   | 05     | ENTER
+D8     | 047                 | 00000010000 | O6                            | 10     | ESC
+E8     | 008                 | 10000100100 | DONE,SEQ,O8                   | 04     | CALL near relative
+F2     | 054                 | 00000000001 | O10                           | 01     | REPNE prefix
+0F 00  | 046                 | 00000010000 | O6                            | 10     | System group 0F 00
+0F 06  | 029                 | 10001000000 | DONE,ALU                      | 00     | CLTS
+0F 07  | 029                 | 10001000000 | DONE,ALU                      | 00     | invalid-opcode
+
+ModR/M displacement decode
+--------------------------
+Ordinary ModR/M state F=10, Q=00001; E=0.
+D=(mod=00 and r/m=110). The reg field does not affect displacement size.
+
+MOD | R/M       | TERMS       | OUTPUT      | DISPLACEMENT        
+----+-----------+-------------+-------------+---------------------
+00  | other     | 095         | 10110000000 | none
+00  | 110       | 095 097     | 10110000100 | disp16
+01  | any       | 000 095     | 10110001100 | disp8
+10  | any       | 095 098     | 10110000100 | disp16
+11  | any       | 095         | 10110000000 | none (register)
+
+Term table
+----------
+
+Each row is one physical term, numbered by source column from left to right.
+All matching terms contribute: OR their output bits to obtain O0..O10.
+
+MATCH is ordered: E Q4Q3Q2Q1Q0 D B7B6B5B4B3B2B1B0
+  0/1 = required input value; ? = either value.
+  In the source matrix, a connection in the first row of an input pair
+  matches 0; the second row matches 1; neither connection means ?.
+
+OR lists O0..O10 from left to right. SIGNALS names the set bits.
+D8/DISP name O7/O8 in the ModR/M displacement terms.
+A mask in a comment contains only that term's F bits. 
+Matching masks must be OR'd together.
+
+OPCODES / MODRM / STATE lists opcode bytes or current states and conditions.
+Ranges are inclusive; 0F marks extended opcodes. 
+
+F= always means CURRENT F.
+
+The MATCH column gives the full condition, including any byte restrictions.
+Some terms serve both ModR/M and literal states; comments describe their
+main use. A term match does not imply that an opcode encoding is valid.
+Blank TERM cells continue the row above.
+
+TERM | MATCH              | OR          | SIGNALS                       | OPCODES / MODRM / STATE                                 | FUNCTION                                                                    
+-----+--------------------+-------------+-------------------------------+---------------------------------------------------------+-----------------------------------------------------------------------------
+000  | ? ??001 ? 01?????? | 00000001100 | D8,DISP                       | F=10-13; mod=01                                         | Ordinary ModR/M: disp8 (mask 0C)
+001  | ? ??110 ? ???????? | 00000010000 | O6                            | F=0C-0F                                                 | First signed byte: select sign extension (mask 10)
+002  | 0 ?0000 ? 11?0011? | 01000010001 | W,O6,O10                      | C6-C7, E6-E7                                            | MOV r/m,immediate; OUT immediate-port,AL/AX
+003  | ? ??1?0 ? ???????? | 00000001000 | O7                            | F=04-07, 0C-0F                                          | First low byte: advance to high byte or sign extension (mask 08)
+004  | 0 0100? ? ??00???? | 00000000101 | O8,O10                        | F=02, 12; E=0; reg=00?                                  | F6 TEST /0-/1: imm8; also sets the immediate bit in state 12
+005  | ? ?10?1 ? 11?????? | 00000010000 | O6                            | F=12-13, 1A-1B; mod=11                                  | ModR/M with immediate, register operand: no displacement
+006  | ? ?11?0 ? ???????? | 00000001010 | O7,O9                         | F=06-07, 0E-0F                                          | First low byte: retain pending imm16 or signed imm8 (mask 0A)
+007  | 0 ??000 ? 0111???? | 10001001100 | DONE,ALU,O7,O8                | 70-7F                                                   | Jcc rel8 - conditional jump
+008  | 0 ?0000 ? 1110?00? | 10000100100 | DONE,SEQ,O8                   | E0-E1, E8-E9                                            | LOOPNE/LOOPE; CALL/JMP near relative
+009  | ? 10001 ? ???????? | 10101000101 | O0,O2,O4,O8,O10               | F=11                                                    | ModR/M + imm8: decode complete, immediate pending (mask 05)
+010  | 0 10111 ? ??10???? | 00000100000 | O5                            | F=1D; E=0; reg=10?                                      | FE/FF /4-/5: set O5 for the JMP encodings
+011  | 0 10111 ? ??01???? | 00000100000 | O5                            | F=1D; E=0; reg=01?                                      | FE/FF /2-/3: set O5 for the CALL encodings
+012  | 0 110?? ? ??00???? | 00000000110 | O8,O9                         | F=03, 0B, 13, 1B; E=0; reg=00?                          | F7 TEST /0-/1: imm16; also matches states 0B, 13 and 1B
+013  | ? ?101? ? ???????? | 00000010110 | O6,O8,O9                      | F=0A-0B, 1A-1B                                          | After first high byte/sign extension: pending imm16/signed imm8 (mask 16)
+014  | ? 1?0?1 ? 11?????? | 00000010100 | O6,O8                         | F=11, 13, 19, 1B; mod=11                                | ModR/M with immediate, register operand: immediate only
+015  | ? 1?01? ? ???????? | 00000010101 | O6,O8,O10                     | F=09, 0B, 19, 1B                                        | After first high byte/sign extension: pending imm8/signed imm8 (mask 15)
+016  | ? 1?1?0 ? ???????? | 00000001001 | O7,O10                        | F=05, 07, 0D, 0F                                        | First low byte: retain pending imm8 or signed imm8 (mask 09)
+017  | 0 ?0000 ? 11001000 | 00000000101 | O8,O10                        | C8                                                      | ENTER
+018  | 0 ?0000 ? 10101000 | 00001010101 | ALU,O6,O8,O10                 | A8                                                      | TEST AL,imm8
+019  | ? ?000? ? ?1100?0? | 10000000000 | DONE                          | 60-61, 64-65, E0-E1, E4-E5; 0F 60-61, 0F 64-65,         | PUSHA/POPA; invalid-opcode (64-65); LOOPNE/LOOPE; IN AL/AX,imm8; 0F:
+     |                    |             |                               | 0F E0-E1, 0F E4-E5                                      | invalid-opcode
+020  | ? ?0000 ? 11110100 | 00000100000 | SEQ                           | F4; 0F F4                                               | HLT; 0F: invalid-opcode
+021  | 0 ?10?? ? 1100???? | 00000010000 | O6                            | F=02-03, 0A-0B, 12-13, 1A-1B; E=0; mod=11; reg=00?      | ModR/M /0-/1, register operand: no displacement
+022  | 0 ?0000 ? 00???100 | 11001010101 | DONE,W,ALU,O6,O8,O10          | 04, 0C, 14, 1C, 24, 2C, 34, 3C                          | ADD/OR/ADC/SBB/AND/SUB/XOR/CMP AL,imm8
+023  | 0 ?0000 ? 11000111 | 00000000010 | O9                            | C7                                                      | MOV r/m16,imm16
+024  | 0 ?100? ? ???????? | 10101000000 | O0,O2,O4                      | F=02-03, 12-13; E=0                                     | F6/F7 or ModR/M + imm16/signed imm8: set O0/O2/O4
+025  | 0 ?0000 ? 0?10?01? | 00000010000 | O6                            | 22-23, 2A-2B, 62-63, 6A-6B                              | AND/SUB r,r/m; BOUND; ARPL; PUSH/IMUL with imm8
+026  | 0 ?0000 ? 10011010 | 00000100110 | SEQ,O8,O9                     | 9A                                                      | CALL far immediate
+027  | ? ?0111 ? ???????? | 10101000000 | O0,O2,O4                      | F=1C-1D                                                 | D0-D3 and FE/FF ModR/M: set O0/O2/O4
+028  | 0 ?0000 ? 1101011? | 11000000000 | DONE,W                        | D6-D7                                                   | undocumented D6; XLAT
+029  | 1 ?0000 ? 0000011? | 10001000000 | DONE,ALU                      | 0F 06-07                                                | 0F: CLTS; invalid-opcode
+030  | 0 ?0000 ? 1111111? | 01000011101 | W,O6,O7,O8,O10                | FE-FF                                                   | FE: INC/DEC r/m8; FF: INC/DEC/CALL/JMP/PUSH r/m16 group
+031  | 0 ?0000 ? 001??1?0 | 00000000001 | O10                           | 24, 26, 2C, 2E, 34, 36, 3C, 3E                          | Segment override prefixes; AND/SUB/XOR/CMP AL,imm8
+032  | 0 ?0000 ? 00???0?? | 01001010000 | W,ALU,O6                      | 00-03, 08-0B, 10-13, 18-1B, 20-23, 28-2B, 30-33, 38-3B  | ADD/OR/ADC/SBB/AND/SUB/XOR/CMP between register and r/m
+033  | 0 ?0000 ? 100000?0 | 00000000001 | O10                           | 80, 82                                                  | ALU r/m8,imm8 (80 and alias 82)
+034  | 0 ??000 ? 001??1?1 | 10001000000 | DONE,ALU                      | 25, 27, 2D, 2F, 35, 37, 3D, 3F                          | AND/SUB/XOR/CMP AX,imm16; DAA/DAS/AAA/AAS
+035  | 0 ?0000 ? 10101001 | 00001010110 | ALU,O6,O8,O9                  | A9                                                      | TEST AX,imm16
+036  | 0 ?0000 ? ?0?1100? | 01000000000 | W                             | 18-19, 38-39, 98-99, B8-B9                              | SBB/CMP r/m,r; CBW/CWD; MOV AX/CX,imm16
+037  | 0 ?0000 ? 11001101 | 00000010101 | O6,O8,O10                     | CD                                                      | INT imm8
+038  | 0 ?0000 ? 00???101 | 11001010110 | DONE,W,ALU,O6,O8,O9           | 05, 0D, 15, 1D, 25, 2D, 35, 3D                          | ADD/OR/ADC/SBB/AND/SUB/XOR/CMP AX,imm16
+039  | 0 ?0000 ? 100000?1 | 00000000010 | O9                            | 81, 83                                                  | ALU r/m16,imm16 or sign-extended imm8
+040  | 0 ?0000 ? 00001111 | 00000000001 | O10                           | 0F                                                      | 0F escape
+041  | 0 ??000 ? ?111?10? | 10001000000 | DONE,ALU                      | 74-75, 7C-7D, F4-F5, FC-FD                              | JE/JNE/JL/JGE rel8; HLT; CMC; CLD/STD
+042  | 0 ??000 ? 010????? | 10101000000 | DONE,REG,ALU                  | 40-5F                                                   | INC/DEC/PUSH/POP r16 - embedded register field
+043  | 0 ?10?? 0 0000???? | 00000010000 | O6                            | F=02-03, 0A-0B, 12-13, 1A-1B; E=0; mod=00; reg=00?; D=0 | ModR/M /0-/1, mod=00 and D=0: no displacement
+044  | 0 ?0000 ? 1?00000? | 01000000001 | W,O10                         | 80-81, C0-C1                                            | ALU r/m,immediate (80-81); shift/rotate r/m,imm8 (C0-C1)
+045  | ? ?0111 ? 01?????? | 00000001100 | O7,O8                         | F=1C-1D; mod=01                                         | D0-D3 and FE/FF ModR/M: disp8 (mask 0C)
+046  | ? ?0000 ? 000000?? | 00000010000 | O6                            | 00-03; 0F 00-03                                         | ADD between register and r/m; 0F: System group 0F 00; System group 0F 01;
+     |                    |             |                               |                                                         | LAR; LSL
+047  | 0 ?0000 ? 11011??? | 00000010000 | O6                            | D8-DF                                                   | ESC
+048  | 0 ?0000 ? ?000?0?? | 01000010000 | W,O6                          | 00-03, 08-0B, 80-83, 88-8B                              | ADD/OR between register and r/m; ALU r/m,immediate; MOV r/m,r or r,r/m
+049  | 0 ?100? ? 01?????? | 10101001100 | O0,O2,O4,O7,O8                | F=02-03, 12-13; E=0; mod=01                             | F6/F7 or ModR/M + imm16/signed imm8: disp8; set O0/O2/O4
+050  | 0 ?0000 ? 11101011 | 10000101100 | DONE,SEQ,O7,O8                | EB                                                      | JMP short
+051  | 0 ?0000 ? 101????? | 11000000000 | DONE,W                        | A0-BF                                                   | MOV accumulator/moffs; string operations; TEST accumulator; MOV r,immediate
+052  | 0 ??000 ? ?11110?? | 10001000000 | DONE,ALU                      | 78-7B, F8-FB                                            | JS/JNS/JP/JNP rel8; CLC/STC/CLI/STI
+053  | 0 ?0000 ? 110100?? | 01000011100 | W,O6,O7,O8                    | D0-D3                                                   | Shift/rotate r/m by 1 or CL
+054  | 0 ?0000 ? 1?1100?? | 00000000001 | O10                           | B0-B3, F0-F3                                            | MOV AL/CL/DL/BL,imm8; LOCK/REPNE/REP prefixes; undocumented F1
+055  | 1 ?0000 ? ?????10? | 10000100000 | DONE,SEQ                      | 0F 04-05, 0F 0C-0D, 0F 14-15, 0F 1C-1D, 0F 24-25,       | 0F: undocumented 0F04; LOADALL; invalid-opcode
+     |                    |             |                               | 0F 2C-2D, 0F 34-35, 0F 3C-3D, 0F 44-45, 0F 4C-4D,       |
+     |                    |             |                               | 0F 54-55, 0F 5C-5D, 0F 64-65, 0F 6C-6D, 0F 74-75,       |
+     |                    |             |                               | 0F 7C-7D, 0F 84-85, 0F 8C-8D, 0F 94-95, 0F 9C-9D,       |
+     |                    |             |                               | 0F A4-A5, 0F AC-AD, 0F B4-B5, 0F BC-BD, 0F C4-C5,       |
+     |                    |             |                               | 0F CC-CD, 0F D4-D5, 0F DC-DD, 0F E4-E5, 0F EC-ED,       |
+     |                    |             |                               | 0F F4-F5, 0F FC-FD                                      |
+056  | ? 01001 ? ???????? | 00000000001 | O10                           | F=12                                                    | ModR/M + signed imm8: immediate-kind bit 01; combines with term 096
+057  | 1 ?0000 ? ??1????? | 10000100000 | DONE,SEQ                      | 0F 20-3F, 0F 60-7F, 0F A0-BF, 0F E0-FF                  | 0F: invalid-opcode
+058  | 0 ?0000 ? 0001?11? | 10010000000 | DONE,SEG                      | 16-17, 1E-1F                                            | PUSH/POP SS/DS
+059  | ? ?000? ? 10?1???? | 10000000000 | DONE                          | 90-9F, B0-BF; 0F 90-9F, 0F B0-BF                        | XCHG AX,r16/NOP; CBW/CWD; CALL far; WAIT; PUSHF/POPF/SAHF/LAHF; MOV
+     |                    |             |                               |                                                         | r,immediate; 0F: invalid-opcode
+060  | 0 ??00? ? 10?10??? | 10100000000 | DONE,REG                      | 90-97, B0-B7                                            | XCHG AX,r16/NOP; MOV r8,imm8 - embedded register field
+061  | ? ?0000 ? 11?0?010 | 00000100000 | SEQ                           | C2, CA, E2, EA; 0F C2, 0F CA, 0F E2, 0F EA              | RET near/far imm16; LOOP; JMP far immediate; 0F: invalid-opcode
+062  | 0 ?0000 ? 11?01010 | 10000100110 | DONE,SEQ,O8,O9                | CA, EA                                                  | RET far imm16; JMP far immediate
+063  | 0 ?0000 ? 01101001 | 00000000001 | O10                           | 69                                                      | IMUL r16,r/m16,imm16
+064  | 0 ?0000 ? 011010?1 | 00001010010 | ALU,O6,O9                     | 69, 6B                                                  | IMUL r16,r/m16,imm16 or sign-extended imm8
+065  | 0 ?0000 ? ?11001?? | 00000010101 | O6,O8,O10                     | 64-67, E4-E7                                            | invalid-opcode (64-67); IN/OUT with immediate port
+066  | 0 ?0000 ? ?110?1?? | 11000000000 | DONE,W                        | 64-67, 6C-6F, E4-E7, EC-EF                              | invalid-opcode (64-67); INS/OUTS; IN/OUT with immediate port or DX
+067  | 0 ?0000 ? 1000???? | 00000010000 | O6                            | 80-8F                                                   | ALU immediate; TEST/XCHG/MOV; MOV segment register; LEA; POP r/m16 group
+068  | 0 ?0000 ? 100001?? | 01001000000 | W,ALU                         | 84-87                                                   | TEST/XCHG between register and r/m
+069  | 0 ?0000 ? 10111??? | 11100010110 | DONE,W,REG,O6,O8,O9           | B8-BF                                                   | MOV r16,imm16
+070  | 0 ?0000 ? 10110??? | 10100010101 | DONE,REG,O6,O8,O10            | B0-B7                                                   | MOV r8,imm8
+071  | 0 ?0000 ? 1100?010 | 00000010110 | O6,O8,O9                      | C2, CA                                                  | RET near/far imm16
+072  | ? ?0000 ? 1100?01? | 10000100000 | DONE,SEQ                      | C2-C3, CA-CB; 0F C2-C3, 0F CA-CB                        | RET near/far, with or without imm16; 0F: invalid-opcode
+073  | 0 ?0000 ? 000?011? | 10010000000 | DONE,SEG                      | 06-07, 16-17                                            | PUSH/POP ES/SS
+074  | 0 ?0000 ? 000??110 | 10010000000 | DONE,SEG                      | 06, 0E, 16, 1E                                          | PUSH ES/CS/SS/DS
+075  | 0 ?0000 ? 01101010 | 00000000001 | O10                           | 6A                                                      | PUSH sign-extended imm8
+076  | 0 ?0000 ? 011010?0 | 10000010110 | DONE,O6,O8,O9                 | 68, 6A                                                  | PUSH imm16 or sign-extended imm8
+077  | 0 ?0000 ? 1?110?11 | 00000000001 | O10                           | B3, B7, F3, F7                                          | MOV BL/BH,imm8; REP prefix; F7 unary group
+078  | 0 ?0000 ? 1111011? | 01000000010 | W,O9                          | F6-F7                                                   | F6/F7 unary group - TEST/NOT/NEG/MUL/IMUL/DIV/IDIV
+079  | 1 ?0000 ? ????1??? | 10000100000 | DONE,SEQ                      | 0F 08-0F, 0F 18-1F, 0F 28-2F, 0F 38-3F, 0F 48-4F,       | 0F: invalid-opcode
+     |                    |             |                               | 0F 58-5F, 0F 68-6F, 0F 78-7F, 0F 88-8F, 0F 98-9F,       |
+     |                    |             |                               | 0F A8-AF, 0F B8-BF, 0F C8-CF, 0F D8-DF, 0F E8-EF,       |
+     |                    |             |                               | 0F F8-FF                                                |
+080  | 1 ?0000 ? ???1???? | 10000100000 | DONE,SEQ                      | 0F 10-1F, 0F 30-3F, 0F 50-5F, 0F 70-7F, 0F 90-9F,       | 0F: invalid-opcode
+     |                    |             |                               | 0F B0-BF, 0F D0-DF, 0F F0-FF                            |
+081  | 1 ?0000 ? 1??????? | 10000100000 | DONE,SEQ                      | 0F 80-FF                                                | 0F: invalid-opcode
+082  | 1 ?0000 ? ?1?????? | 10000100000 | DONE,SEQ                      | 0F 40-7F, 0F C0-FF                                      | 0F: invalid-opcode
+083  | ? ?0111 1 ?0?????? | 00000000100 | O8                            | F=1C-1D; mod=?0; D=1                                    | D0-D3 and FE/FF ModR/M: direct disp16 (mask 04)
+084  | ? ?0111 ? 10?????? | 00000000100 | O8                            | F=1C-1D; mod=10                                         | D0-D3 and FE/FF ModR/M: disp16 (mask 04)
+085  | 0 ?10?? 1 ?0?????? | 00000000100 | O8                            | F=02-03, 0A-0B, 12-13, 1A-1B; E=0; mod=?0; D=1          | F6/F7 or ModR/M + imm16/signed imm8: direct disp16
+086  | 0 ?100? ? 10?????? | 10100000100 | O0,O2,O8                      | F=02-03, 12-13; E=0; mod=10                             | F6/F7 or ModR/M + imm16/signed imm8: disp16; set O0/O2/O4
+087  | 0 ?0000 ? 1?1000?? | 10000000100 | DONE,O8                       | A0-A3, E0-E3                                            | MOV accumulator/moffs; LOOPNE/LOOPE/LOOP/JCXZ
+088  | 0 ?0000 ? 111000?? | 10000001100 | DONE,O7,O8                    | E0-E3                                                   | LOOPNE/LOOPE/LOOP/JCXZ rel8
+089  | ? ?0000 ? 110011?? | 00000100000 | SEQ                           | CC-CF; 0F CC-CF                                         | INT 3; INT imm8; INTO; IRET; 0F: invalid-opcode
+090  | ? ?000? ? ?1001??? | 10000000000 | DONE                          | 48-4F, C8-CF; 0F 48-4F, 0F C8-CF                        | DEC r16; ENTER/LEAVE; RET far; INT/INTO/IRET; 0F: invalid-opcode
+091  | ? 1?0?1 0 00?????? | 00000010000 | O6                            | F=11, 13, 19, 1B; mod=00; D=0                           | ModR/M + imm8/imm16, mod=00 and D=0: immediate only
+092  | ? ?10?1 0 00?????? | 00000010000 | O6                            | F=12-13, 1A-1B; mod=00; D=0                             | ModR/M + imm16/signed imm8, mod=00 and D=0: no displacement
+093  | ? ?1101 ? ???????? | 00000011110 | O6,O7,O8,O9                   | F=16-17                                                 | Immediate word/signed byte: advance to high/extension byte (mask 1E)
+094  | ? 11101 ? ???????? | 00000011111 | O6,O7,O8,O9,O10               | F=17                                                    | Signed immediate: select sign extension (mask 1F)
+095  | ? 0?001 ? ???????? | 10110000000 | O0,O2,O3                      | F=10, 12                                                | Ordinary ModR/M or ModR/M + signed imm8: set O0/O2/O3
+096  | ? ?1001 ? ???????? | 10111000110 | O0,O2,O3,O4,O8,O9             | F=12-13                                                 | ModR/M + imm16/signed imm8: decode complete, immediate pending (mask 06)
+097  | ? ??001 1 ?0?????? | 00000000100 | DISP                          | F=10-13; mod=?0; D=1                                    | Ordinary ModR/M: direct disp16 (mask 04)
+098  | ? ??001 ? 10?????? | 00000000100 | DISP                          | F=10-13; mod=10                                         | Ordinary ModR/M: disp16 (mask 04)
+099  | 0 ?0000 ? 1101010? | 10001010101 | DONE,ALU,O6,O8,O10            | D4-D5                                                   | AAM/AAD - following immediate byte
+100  | 0 ?0000 ? 1?000?0? | 00000010000 | O6                            | 80-81, 84-85, C0-C1, C4-C5                              | ALU immediate (80-81); TEST r/m,r; shift/rotate immediate; LES/LDS
+101  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+102  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+103  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+104  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+105  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+106  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+107  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+108  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+109  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+110  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+111  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+112  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+113  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+114  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+115  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+116  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+117  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+118  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+119  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+120  | ? ????? ? ???????? | 00000000000 | --                            | --                                                      | UNUSED
+
+Source: PLA02_raw.txt; original input order: PLA02_logic.txt.
+
+Intel US4442484A, Figure 3: IU control and instruction formatting.
+https://patentimages.storage.googleapis.com/a8/9e/5e/09096e3533181d/US4442484.pdf#page=4
